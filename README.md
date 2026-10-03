@@ -35,5 +35,5 @@ Before running the project, make sure you have the following installed:
 
 ```bash
 cd desktop
-git clone <repository-url>
+git clone https://github.com/josephkohhh/SIM2026Q4-Mag5.git
 ```
