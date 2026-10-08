@@ -1,0 +1,54 @@
+commands:
+source venv/bin/activate 
+uvicorn main:app --reload
+which python
+pip list
+
+
+Boundary = represents the endpoint/routes 
+Control = represents the usecase biz logic (coordinates everything)
+Entity = represents the class stored in the database
+Schemas = defines what the client is allowed to send
+
+Database: postgresql://postgres:password@localhost:5432/SIM2026Q4Mag5
+
+FastAPI Architecture:
+backend/
+├── main.py
+├── boundary/
+├── control/
+├── entity/
+├── schemas/
+├── database/
+└── utils/
+
+
+
+Register module 
+
+POST /auth/register
+        │
+        ▼
+auth_boundary.py
+        │
+        ▼
+auth_control.py
+        │
+        ├── check existing user
+        ├── hash password
+        └── create User
+                │
+                ▼
+            database
+
+
+test data:
+
+{
+  "email": "alice123e@example.com",
+  "password": "alice123",
+  "role": "CUSTOMER",
+  "name": "alice",
+  "surname": "tan",
+  "phone_no": "123456789"
+}
