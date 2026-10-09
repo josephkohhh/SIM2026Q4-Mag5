@@ -1,4 +1,4 @@
-# token.py - handles JWT creation and verification
+# jsonwebtoken.py - handles JWT creation and verification
 
 import os
 import jwt

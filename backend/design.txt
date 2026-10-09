@@ -42,35 +42,49 @@ register_control.py
             database
 
 
-Login module
+Login Module
 
-POST /login
-    │
-    ▼
-login_boundary.py
-    │
-    ▼
-login_control.py
-    │
-    ├── find user by email
-    │
-    ├── check if user exists
-    │
-    ├── verify password hash
-    │
-    ├── establish session and return user role 
-    │
-    └── return login response
-            │
-            ▼
-         database
-      (read user record)
+                 POST /login
+                     │
+                     ▼
+              login_boundary.py
+                     │
+                     │ Receive and validate login request
+                     ▼
+               login_control.py
+                     │
+                     ├── Find user by email
+                     │
+                     ├── Check if user exists
+                     │
+                     ├── Verify password against stored hash
+                     │
+                     ├── Generate JWT access token
+                     │
+                     └── Retrieve user's role
+                              │
+                              ▼
+                           Database
+                       (Read user record)
+                              │
+                              ▼
+                       Return to Boundary
+                              │
+                              ├── Set JWT in HTTP-only cookie
+                              │
+                              └── Return login response
+                                      │
+                                      ▼
+                                  Frontend
+                              (Redirect based on role)
+```
+
 
 
 test data:
 
 {
-  "email": "alice123e@example.com",
+  "email": "alice123@example.com",
   "password": "alice123",
   "role": "CUSTOMER",
   "name": "alice",
@@ -81,4 +95,9 @@ test data:
 {
   "email": "admin01@example.com",
   "password": "password"
+}
+
+{
+  "email": "alice123@example.com",
+  "password": "alice123"
 }

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from database.database import get_db 
 from schemas.login_schema import LoginRequest, LoginResponse
 from control.login_control import login_user 
-from utils.token import create_access_token
+from utils.jsonwebtoken import create_access_token
 
 
 router = APIRouter()
@@ -20,14 +20,14 @@ def login(data: LoginRequest, response: Response, db: Session = Depends(get_db))
         user = login_user(db, data)
 
          # call to create token using the user's database role
-        token = create_access_token(user.id, user.role)
+        token = create_access_token(user.user_id, user.role)
 
-        # Store token in an HTTP-only cookie
+        # store token in an HTTP-only cookie
         response.set_cookie(
             key="access_token",
             value=token,
             httponly=True,
-            secure=True,  # HTTPS in production
+            secure=False,  # HTTP in dev - switch to TRUE if HTTPS
             samesite="lax",
             max_age=15 * 60,
             path="/",

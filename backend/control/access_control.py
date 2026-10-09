@@ -3,7 +3,7 @@
 from fastapi import Request, HTTPException
 from jwt.exceptions import InvalidTokenError
 
-from utils.token import verify_access_token
+from backend.utils.jsonwebtoken import verify_access_token
 
 
 def get_current_user(request: Request):

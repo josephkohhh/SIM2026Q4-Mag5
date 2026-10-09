@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from database.database import Base, engine
-from boundary.router import router
+from boundary.central_router import router
 
 app = FastAPI(title="FindMyID") # Instantiate FastAPI app
 

@@ -2,5 +2,7 @@
 
 # Logout a user
 def logout_user():
-    # Cookie clearing is handled by the boundary
+
+    # cookie clearing is handled by the boundary
+    
     return {"message": "Logout successful"}
