@@ -1,14 +1,17 @@
+# main.py - application entry point
+
 from fastapi import FastAPI
 from database.database import Base, engine
-from boundary.register_boundary import router as register_router
+from boundary.router import router
 
-app = FastAPI(title="FindMyID") # Instantiate FastAPI class
+app = FastAPI(title="FindMyID") # Instantiate FastAPI app
 
-Base.metadata.create_all(bind=engine) # Create all tables in db defined in entity folder
+Base.metadata.create_all(bind=engine) # Create database tables 
 
-app.include_router(register_router)
+app.include_router(router) # Register all boundary routes
 
 
-@app.get("/") # GET method - "/" is default homepage endpoint
+# Homepage endpoint
+@app.get("/")
 def test():
     return 'hello world!'

@@ -1,5 +1,5 @@
 commands:
-source venv/bin/activate 
+source .venv/bin/activate 
 uvicorn main:app --reload
 which python
 pip list
@@ -26,13 +26,13 @@ backend/
 
 Register module 
 
-POST /auth/register
+POST /register
         │
         ▼
-auth_boundary.py
+register_boundary.py
         │
         ▼
-auth_control.py
+register_control.py
         │
         ├── check existing user
         ├── hash password
@@ -40,6 +40,31 @@ auth_control.py
                 │
                 ▼
             database
+
+
+Login module
+
+POST /login
+    │
+    ▼
+login_boundary.py
+    │
+    ▼
+login_control.py
+    │
+    ├── find user by email
+    │
+    ├── check if user exists
+    │
+    ├── verify password hash
+    │
+    ├── establish session and return user role 
+    │
+    └── return login response
+            │
+            ▼
+         database
+      (read user record)
 
 
 test data:
@@ -51,4 +76,9 @@ test data:
   "name": "alice",
   "surname": "tan",
   "phone_no": "123456789"
+}
+
+{
+  "email": "admin01@example.com",
+  "password": "password"
 }

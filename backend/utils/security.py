@@ -1,4 +1,4 @@
-# security.py - Password hashing and verification
+# security.py - password hashing and verification
 
 from pwdlib import PasswordHash
 

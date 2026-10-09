@@ -15,6 +15,7 @@ router = APIRouter()
 def register(register_data: RegisterRequest, db: Session = Depends(get_db)):
 
     try:
+        # call to register user 
         user = register_user(db, register_data)
 
         return RegisterResponse( 
