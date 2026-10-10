@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from database.database import get_db 
 from schemas.login_schema import LoginRequest, LoginResponse
-from control.login_control import login_user 
+from control.login_control import login_useraccount 
 from utils.jsonwebtoken import create_access_token
 
 
@@ -17,7 +17,7 @@ def login(data: LoginRequest, response: Response, db: Session = Depends(get_db))
 
     try:
         # call to login user
-        user = login_user(db, data)
+        user = login_useraccount(db, data)
 
          # call to create token using the user's database role
         token = create_access_token(user.user_id, user.role)
@@ -35,8 +35,8 @@ def login(data: LoginRequest, response: Response, db: Session = Depends(get_db))
 
         return LoginResponse( 
             message = f"Welcome {user.name}",
-            name=user.name,
-            role=user.role,
+            #name=user.name,
+            #role=user.role.value,
             )
 
     except ValueError as error:

@@ -1,7 +1,7 @@
 # logout_boundary.py - boundary for user logout
 
 from fastapi import APIRouter, Response, status
-from control.logout_control import logout_user
+from control.logout_control import logout_useraccount
 
 router = APIRouter()
 
@@ -10,7 +10,7 @@ router = APIRouter()
 def logout(response: Response):
 
     # Call logout control
-    result = logout_user()
+    result = logout_useraccount()
 
     # Clear authentication cookie
     response.delete_cookie(

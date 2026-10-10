@@ -16,8 +16,8 @@ class StatusEnum(str, Enum):
     INACTIVE = "INACTIVE"
 
 
-class User(Base):
-    __tablename__ = "users"
+class UserAccount(Base):
+    __tablename__ = "useraccount"
 
     user_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)

@@ -1,10 +1,10 @@
-# register_control.py - service for handling user registration
+# createuseraccount_control.py - service for handling user account creation
 
 from entity.useraccount import UserAccount
 from utils.security import hash_password
 
-# Register a user
-def register_useraccount(db, register_data):
+# Create a user
+def create_useraccount(db, register_data):
 
     # Check whether email already exists
     existing_email = (

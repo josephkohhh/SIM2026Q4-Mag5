@@ -11,6 +11,6 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel): # The fields that user recieves if succeed
     message: str
-    name: str
-    role: str
+    #name: str
+    #role: str
 

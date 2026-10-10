@@ -83,21 +83,34 @@ Login Module
 
 test data:
 
+register
 {
-  "email": "alice123@example.com",
-  "password": "alice123",
-  "role": "CUSTOMER",
-  "name": "alice",
-  "surname": "tan",
+  "email": "john123@example.com",
+  "password": "password",
+  "role": "INTERIOR DESIGNER",
+  "name": "john",
+  "surname": "lee",
   "phone_no": "123456789"
 }
 
+login
 {
   "email": "admin01@example.com",
   "password": "password"
 }
 
+login 
 {
   "email": "alice123@example.com",
-  "password": "alice123"
+  "password": "password"
+}
+
+update
+{
+  "password": "password",
+  "role": "CUSTOMER",
+  "name": "alice",
+  "surname": "",
+  "phone_no": "123456",
+  "status": "ACTIVE"
 }

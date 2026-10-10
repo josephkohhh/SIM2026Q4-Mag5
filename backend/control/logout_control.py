@@ -1,7 +1,7 @@
 # logout_control.py - service for handling user logout
 
 # Logout a user
-def logout_user():
+def logout_useraccount():
 
     # cookie clearing is handled by the boundary
     

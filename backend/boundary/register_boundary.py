@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from database.database import get_db 
 from schemas.register_schema import RegisterRequest, RegisterResponse
-from control.register_control import register_user 
+from control.register_control import register_useraccount
 
 
 router = APIRouter()
@@ -16,7 +16,7 @@ def register(register_data: RegisterRequest, db: Session = Depends(get_db)):
 
     try:
         # call to register user 
-        user = register_user(db, register_data)
+        user = register_useraccount(db, register_data)
 
         return RegisterResponse( 
             message = "Registered successfully!",
