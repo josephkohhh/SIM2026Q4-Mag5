@@ -61,24 +61,15 @@ function UserForm({buttonText, onSubmit, isAdmin = false, initialData ={}, isEdi
 
     useEffect(() => {
       async function loadProfiles() {
-          try {
-              const response = await fetch(
-                  "http://127.0.0.1:8000/user-profiles"
-              );
-
-              if (!response.ok) {
-                  throw new Error("Failed to load profiles");
-              }
-
+          try{
+              const response = await fetch("http://127.0.0.1:8000/user-profiles");
+              if (!response.ok) {throw new Error("Failed to load profiles");}
               const data = await response.json();
-
-              setProfiles(data.filter(profile => !profile.suspended));
-
+              setProfiles(data);
           } catch (error) {
               console.error(error);
           }
       }
-
       loadProfiles();
     }, []);
 
@@ -169,13 +160,11 @@ function UserForm({buttonText, onSubmit, isAdmin = false, initialData ={}, isEdi
       )}
 
       <label htmlFor="register_role">Role</label>
-      <select id="register_role" value={role} onChange={(e) => setRole(e.target.value)} disabled={isEdit}>
+      <select id="register_role" value={role} onChange={(e) => setRole(e.target.value)} disabled={isEdit || isView}>
         <option value="-">Select role</option>
-        {profiles
-            .filter(profile => isAdmin || ["Customer","Interior Designer"].includes(profile.name))
-            .map(profile => ( <option key={profile.id} value={profile.name.replace(/\s+/g, "")}> {profile.name} </option>
-            ))
-        }
+      {profiles
+        .filter(profile => isEdit || isView || (!profile.suspended &&( isAdmin || ["Customer", "Interior Designer"].includes(profile.name) )))
+        .map(profile => ( <option key={profile.id} value={profile.name.replace(/\s+/g, "")}> {profile.name} </option>))}
       </select>
       {(isEdit || isView) && (
           <>
