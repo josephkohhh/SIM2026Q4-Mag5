@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function UserForm({buttonText, onSubmit, isAdmin = false, initialData ={}, isEdit=false, isRegister=false, isView=false}){
     const [firstname, setFirstname] = useState(initialData.firstname ?? "");
@@ -11,8 +11,8 @@ function UserForm({buttonText, onSubmit, isAdmin = false, initialData ={}, isEdi
     const [confirmpassword, setConfirmPassword] = useState("");
     const [role, setRole] = useState(initialData.role ?? "-");
     const [agreeTerms, setAgreeTerms] = useState(false);
+    const [profiles, setProfiles] = useState([]);
 
-    console.log(initialData);
     function handleSubmit(e){
         e.preventDefault();
 
@@ -58,6 +58,30 @@ function UserForm({buttonText, onSubmit, isAdmin = false, initialData ={}, isEdi
 
         onSubmit(formatData);
     }
+
+    useEffect(() => {
+      async function loadProfiles() {
+          try {
+              const response = await fetch(
+                  "http://127.0.0.1:8000/user-profiles"
+              );
+
+              if (!response.ok) {
+                  throw new Error("Failed to load profiles");
+              }
+
+              const data = await response.json();
+
+              setProfiles(data.filter(profile => !profile.suspended));
+
+          } catch (error) {
+              console.error(error);
+          }
+      }
+
+      loadProfiles();
+    }, []);
+
   return (
     <form className="user_form" onSubmit={handleSubmit}>
       <div className="name_row">
@@ -145,25 +169,19 @@ function UserForm({buttonText, onSubmit, isAdmin = false, initialData ={}, isEdi
       )}
 
       <label htmlFor="register_role">Role</label>
-      <select id="register_role" value={role} onChange={(e) => setRole(e.target.value)} disabled={isEdit || isView}>
+      <select id="register_role" value={role} onChange={(e) => setRole(e.target.value)} disabled={isEdit}>
         <option value="-">Select role</option>
-        <option value="Customer">Customer</option>
-        <option value="InteriorDesigner">Interior Designer</option>
-        {isAdmin && (
-            <>
-                <option value="UserAdmin">User Admin</option>
-                <option value="PlatformManagement">Platform Management</option>
-            </>
-        )}
+        {profiles
+            .filter(profile => isAdmin || ["Customer","Interior Designer"].includes(profile.name))
+            .map(profile => ( <option key={profile.id} value={profile.name.replace(/\s+/g, "")}> {profile.name} </option>
+            ))
+        }
       </select>
       {(isEdit || isView) && (
           <>
               <label htmlFor="register_status">Status</label>
               <select
-                  id="register_status"
-                  value={status}
-                  onChange={(e) => setstatus(e.target.value)}
-                  disabled={isView}>
+                  id="register_status" value={status} onChange={(e) => setstatus(e.target.value)} disabled={isView}>
                   <option value="active">Active</option>
                   <option value="suspended">Suspended</option>
               </select>

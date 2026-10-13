@@ -46,7 +46,7 @@ function Register({setisloggedin, setCurrentUser,setCurrentRole}){
 
             <section className="register_panel">
                 <div className="register_form">
-                <h1>Create an account</h1>
+                <h1>Register an account</h1>
                 <p className="register_subtitle">Fill in your details to get started.</p>
                 <UserForm buttonText="Register" onSubmit={register} isRegister={true}/>
                 <p className="register_login_link"> Already have an account?{" "}<Link to="/login">Log in</Link></p>

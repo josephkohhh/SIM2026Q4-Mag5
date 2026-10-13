@@ -105,7 +105,8 @@ function AdminPortal({logout}) {
             <img src={logo} alt="LOGO"></img>
 
             <nav className="AdminPortal_menu">
-            <Link to="/admin_portal" className="active">Users Account</Link>
+                <Link to="/admin_portal" className="active">Users Account</Link>
+                <Link to="/admin_portal/user_profiles">User Profiles</Link>
             </nav>
 
             <button type="button" className="signout" onClick={logout}>Sign out</button>

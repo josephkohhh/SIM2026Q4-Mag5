@@ -12,6 +12,7 @@ import Home from './Home';
 import EditUser from './EditUser';
 import Viewuser from './Viewuser';
 import './App.css';
+import UserProfiles from "./UserProfiles";
 
 function App() {
   const [currentRole, setCurrentRole] = useState(() => localStorage.getItem("currentRole") || "");
@@ -87,6 +88,14 @@ function App() {
           element={
             <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["UserAdmin"]}>
               <Viewuser logout={logout}/>
+            </ProtectedRoute>
+          }/>
+
+          <Route
+          path="/admin_portal/user_profiles"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["UserAdmin"]}>
+              <UserProfiles logout={logout} />
             </ProtectedRoute>
           }/>
 

@@ -1,0 +1,225 @@
+
+.user-profiles-page {
+  padding: 0;
+  background: #faf7f2;
+  min-height: 0;
+  color: #17352f;
+  font-family: Arial, sans-serif;
+}
+
+
+.user-profiles-page h2 {
+  margin: 0 0 24px;
+  font-size: 21px;
+}
+
+.user-profiles-panel {
+  background: #fff;
+  border: 1px solid #e8e4df;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.user-profiles-panel h3 {
+  font-size: 15px;
+  margin: 0 0 16px;
+}
+
+.profile-search,
+.profile-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dedede;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 13px;
+}
+
+.profile-add {
+  display: block;
+  margin: 15px 0 22px;
+  padding: 11px 17px;
+  background: #237663;
+  color: white;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.profile-table-scroll {
+  overflow-x: auto;
+}
+
+.profile-table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+}
+
+.profile-table th,
+.profile-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.profile-table th {
+  font-weight: bold;
+}
+
+.profile-table th:nth-child(1) { width: 32%; }
+.profile-table th:nth-child(2) { width: 38%; }
+.profile-table th:nth-child(3) { width: 16%; }
+
+.profile-edit {
+  padding: 7px 16px;
+  background: #56615e;
+  color: white;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.profile-toggle {
+  appearance: none;
+  width: 34px;
+  height: 18px;
+  margin: 0;
+  background: #c5cac8;
+  border-radius: 16px;
+  cursor: pointer;
+  vertical-align: middle;
+  position: relative;
+}
+
+.profile-toggle::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  height: 12px;
+  width: 12px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.15s;
+}
+
+.profile-toggle:checked { background: #d74747; }
+.profile-toggle:checked::before { transform: translateX(16px); }
+
+.profile-form {
+  display: grid;
+  gap: 9px;
+  padding: 18px;
+  background: #f7f8f7;
+  border: 1px solid #e0e6e2;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.profile-form label { font-size: 13px; }
+.profile-form-actions { display: flex; gap: 10px; margin-top: 8px; }
+.profile-form-actions button {
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #237663;
+  color: white;
+}
+.profile-form-actions button:last-child { background: #717c78; }
+.profile-error { color: #bf3333; font-size: 13px; }
+.profile-empty { text-align: center; color: #777; padding: 16px; }
+
+
+body:has(.AdminPortal_page) .navbar {
+    position: absolute;
+    top: 20px;
+    right: 7%;
+    width: auto;
+    height: auto;
+    padding: 0;
+    background: transparent;
+    border: none;
+    z-index: 1100;
+}
+
+body:has(.AdminPortal_page) :is(.navbar, .UA_navbar) {
+  position: fixed;
+  top: 15px;
+  right: 5%;
+  width: max-content;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  border: none;
+  z-index: 1100;
+}
+
+body:has(.AdminPortal_page) :is(.nav-links, .UA_nav-links) {
+  width: auto;
+}
+
+body:has(.AdminPortal_page) :is(.nav-links, .UA_nav-links) button {
+  display: none;
+}
+
+.profile-suspend-btn {
+  background: #dc4545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.profile-activate-btn {
+  background: #217562;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.profile-delete {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 16px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.profile-delete:hover {
+  background: #b02a37;
+}
+/* Keep Edit and Delete buttons side by side */
+.profile-table td:last-child {
+  white-space: nowrap;
+}
+
+.profile-edit,
+.profile-delete {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.profile-delete {
+  margin-left: 10px;
+}
+
+.status-active {
+  color: green;
+  font-weight: bold;
+  margin-right: 15px;
+}
+
+.status-suspended {
+  color: red;
+  font-weight: bold;
+  margin-right: 15px;
+}
+
