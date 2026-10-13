@@ -1,0 +1,89 @@
+.name_row {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+.name_field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.name_field input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.createuser_panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 48px;
+  background-color: #faf7f2;
+  box-sizing: border-box;
+}
+
+.createuser_form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 360px;
+}
+
+.createuser_form h1 {
+  margin: 0 0 10px;
+  color: #12352f;
+  font-size: 24px;
+  margin-left: 70px;
+}
+
+.user_form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.user_form label {
+  margin-bottom: 6px;
+  color: #655e50;
+  font-size: 13px;
+}
+
+.user_form input,
+.user_form select {
+  width: 100%;
+  height: 42px;
+  margin: 0 0 18px;
+  padding: 0 12px;
+  border: 1px solid #ddd5c8;
+  border-radius: 6px;
+  background-color: white;
+  color: #222;
+  font: inherit;
+}
+
+.user_form input:focus,
+.user_form select:focus {
+  outline: none;
+  border-color: #207662;
+}
+
+.user_form button {
+  width: 100%;
+  height: 44px;
+  margin-top: 8px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #207662;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.user_form button:hover {
+  background-color: #185c4d;
+}
