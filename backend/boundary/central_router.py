@@ -15,6 +15,8 @@ from boundary.createuserprofile_boundary import router as createuserprofile_rout
 from boundary.updateuserprofile_boundary import router as updateuserprofile_router
 from boundary.deleteuserprofile_boundary import router as deleteuserprofile_router
 from boundary.getalluserprofile_boundary import router as getalluserprofile_router
+from boundary.getuserprofile_boundary import router as getuserprofile_router
+
 
 
 router = APIRouter()
@@ -35,6 +37,8 @@ router.include_router(createuserprofile_router)
 router.include_router(updateuserprofile_router)
 router.include_router(deleteuserprofile_router)
 router.include_router(getalluserprofile_router)
+router.include_router(getuserprofile_router)
+
 
 
 
