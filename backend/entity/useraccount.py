@@ -1,4 +1,4 @@
-# user.py - User entity representing the User table stored in the database
+# useraccount.py - User entity representing the User table stored in the database
 
 from enum import Enum
 from database.database import Base
