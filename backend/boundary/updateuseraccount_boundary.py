@@ -8,24 +8,27 @@ from schemas.updateuseraccount_schema import (
     UpdateUserAccountRequest,
     UpdateUserAccountResponse
 )
-from control.updateuseraccount_control import update_useraccount
+from control.updateuseraccount_control import UpdateUserAccountControl
 
 router = APIRouter()
 
-# Update user account endpoint
+# update user account endpoint
 @router.patch(
-    "/updateuseraccount/{user_id}",
+    "/updateuseraccount/{email}",
     response_model=UpdateUserAccountResponse,
     status_code=status.HTTP_200_OK
 )
 def update(
-    user_id: int,
+    email: str,
     update_data: UpdateUserAccountRequest,
     db: Session = Depends(get_db)
 ):
+    # Create the Control and provide the database session
+    control = UpdateUserAccountControl(db)
+
     try:
-        # Call control to update user account
-        user = update_useraccount(db, user_id, update_data)
+        # Pass user data to the Control
+        user = control.execute(email, update_data)
 
         return UpdateUserAccountResponse(
             message=(

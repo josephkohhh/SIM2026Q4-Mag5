@@ -1,38 +1,31 @@
-# register_control.py - service for handling user registration
+# register_control.py - handles user registration business logic
 
-from entity.useraccount import UserAccount
+from entity.useraccount import UserAccountEntity
 from utils.security import hash_password
 
-# Register a user
-def register_useraccount(db, register_data):
 
-    # Check whether email already exists
-    existing_email = (
-        db.query(UserAccount)
-        .filter(UserAccount.email == register_data.email)
-        .first()
-    )
+class RegisterControl:
 
-    if existing_email:
-        raise ValueError("Email already registered")
+    # Initializes the Entity to access user account database operations
+    def __init__(self, db):
+        self.user_entity = UserAccountEntity(db)
 
-    # Hash password
-    hashed_password = hash_password(register_data.password)
+    def execute(self, register_data):
+        existing_user = self.user_entity.get_by_email(
+            register_data.email
+        )
 
-    # Create user entity
-    new_user = UserAccount(
-        email = register_data.email,
-        password_hash = hashed_password,
-        role = register_data.role,
-        name = register_data.name,
-        surname = register_data.surname,
-        phone_no = register_data.phone_no
-    )
+        if existing_user:
+            raise ValueError("User already exist")
 
-    # Save to database
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+        user_data = {
+            "email": register_data.email,
+            "password_hash": hash_password(register_data.password),
+            "role": register_data.role,
+            "name": register_data.name,
+            "surname": register_data.surname,
+            "phone_no": register_data.phone_no,
+        }
 
-    return new_user
-
+        # Return newly registered user back to boundary
+        return self.user_entity.create(user_data)

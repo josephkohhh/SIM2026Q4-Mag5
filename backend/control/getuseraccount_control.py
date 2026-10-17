@@ -1,19 +1,19 @@
-# getuseraccount_control.py - retrieve user account details
+# getuseraccount_control.py - handles retrieving user account business logic
 
-from entity.useraccount import UserAccount
+from entity.useraccount import UserAccountEntity
 
 
-def get_useraccount_by_id(db, user_id):
+class GetUserAccountControl:
 
-    # Find user account by ID
-    user = (
-        db.query(UserAccount)
-        .filter(UserAccount.user_id == user_id)
-        .first()
-    )
+    # Initializes the Entity for accessing user email
+    def __init__(self, db):
+        self.user_entity = UserAccountEntity(db)
 
-    # Check whether account exists
-    if not user:
-        raise LookupError("User account not found")
+    def execute(self, user_email: str):
+        user = self.user_entity.get_by_email(user_email)
 
-    return user
+        if not user:
+            raise LookupError("User account not found")
+
+        # Return user info back to Boundary
+        return user

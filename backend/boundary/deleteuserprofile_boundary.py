@@ -1,16 +1,15 @@
-
-# deleteuserprofile_boundary.py - Boundary for deleting a user profile
+# deleteuserprofile_boundary.py - boundary for deleting a user profile
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.database import get_db
 from schemas.deleteuserprofile_schema import DeleteUserProfileResponse
-from control.deleteuserprofile_control import delete_userprofile
+from control.deleteuserprofile_control import DeleteUserProfileControl
 
 router = APIRouter()
 
-
+# delete user profile endpoint
 @router.delete(
     "/deleteuserprofile/{profile_id}",
     response_model=DeleteUserProfileResponse,
@@ -20,12 +19,14 @@ def deleteuserprofile(
     profile_id: int,
     db: Session = Depends(get_db)
 ):
+    control = DeleteUserProfileControl(db)
+
     try:
-        # Call control to delete user profile
-        delete_userprofile(db, profile_id)
+        # Pass profile id to the Control
+        control.execute(profile_id)
 
         return DeleteUserProfileResponse(
-            message=f"User profile deleted successfully"
+            message="User profile deleted successfully"
         )
 
     except LookupError as error:

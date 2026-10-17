@@ -1,29 +1,27 @@
-
-# suspenduseraccount_boundary.py
+# suspenduseraccount_boundary.py - boundary for suspending a user account
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.database import get_db
 from schemas.suspenduseraccount_schema import SuspendUserAccountResponse
-from control.suspenduseraccount_control import suspend_useraccount
-
+from control.suspenduseraccount_control import SuspendUserAccountControl
 
 router = APIRouter()
 
-
+# suspend user account endpoint
 @router.patch(
-    "/suspenduseraccount/{user_id}",
+    "/suspenduseraccount/{user_email}",
     response_model=SuspendUserAccountResponse,
     status_code=status.HTTP_200_OK
 )
-def suspend(
-    user_id: int,
-    db: Session = Depends(get_db)
-):
+def suspend(email: str, db: Session = Depends(get_db)):
+    # Create the Control and provide the database session
+    control = SuspendUserAccountControl(db)
+
     try:
-        # Call control to suspend account
-        user = suspend_useraccount(db, user_id)
+        # Pass user email to the Control
+        user = control.execute(email)
 
         return SuspendUserAccountResponse(
             message=f"User account {user.name} has been suspended successfully",

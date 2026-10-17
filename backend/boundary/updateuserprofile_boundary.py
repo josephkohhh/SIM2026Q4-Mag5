@@ -1,5 +1,4 @@
-
-# updateuserprofile_boundary.py - Boundary for admin to update user profile
+# updateuserprofile_boundary.py - boundary for admin to update user profile
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -9,12 +8,11 @@ from schemas.updateuserprofile_schema import (
     UpdateUserProfileRequest,
     UpdateUserProfileResponse
 )
-from control.updateuserprofile_control import update_userprofile
+from control.updateuserprofile_control import UpdateUserProfileControl
 
 router = APIRouter()
 
-
-# Update user profile endpoint
+# update user profile endpoint
 @router.patch(
     "/updateuserprofile/{profile_id}",
     response_model=UpdateUserProfileResponse,
@@ -25,9 +23,12 @@ def updateuserprofile(
     update_data: UpdateUserProfileRequest,
     db: Session = Depends(get_db)
 ):
+    # Create the Control and provide the database session
+    control = UpdateUserProfileControl(db)
+
     try:
-        # Call control to update user profile
-        update_userprofile(db, profile_id, update_data)
+        # Pass userprofile data to the Control
+        control.execute(profile_id, update_data)
 
         return UpdateUserProfileResponse(
             message="User profile updated successfully"

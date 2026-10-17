@@ -1,30 +1,21 @@
-# suspenduseraccount_control.py
+# suspenduseraccount_control.py - handles user account suspension logic
 
-from entity.useraccount import UserAccount, StatusEnum
+from entity.useraccount import UserAccountEntity, StatusEnum
 
+class SuspendUserAccountControl:
 
-def suspend_useraccount(db, user_id):
+    # Initializes the Entity for accessing user account
+    def __init__(self, db):
+        self.user_entity = UserAccountEntity(db)
 
-    # Find user account
-    user = (
-        db.query(UserAccount)
-        .filter(UserAccount.user_id == user_id)
-        .first()
-    )
+    def execute(self, user_email: str):
+        user = self.user_entity.get_by_email(user_email)
 
-    # Check whether account exists
-    if not user:
-        raise LookupError("User account not found")
+        if not user:
+            raise LookupError("User account not found")
 
-    # Check whether account is already inactive
-    if user.status == StatusEnum.INACTIVE:
-        raise ValueError("User account is already suspended")
+        if user.status == StatusEnum.INACTIVE:
+            raise ValueError("User account is already suspended")
 
-    # Suspend user account
-    user.status = StatusEnum.INACTIVE
-
-    # Save changes
-    db.commit()
-    db.refresh(user)
-
-    return user
+        # Return the suspended user info back to Boundary
+        return self.user_entity.suspend(user)

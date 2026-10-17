@@ -1,31 +1,29 @@
-# createuserprofile_control.py - service for handling user profile creation
+# createuserprofile_control.py - handles user profile creation business logic
 
-from entity.userprofile import UserProfile
-
-# Create a userprofile
-def create_userprofile(db, userprofile_data):
-
-    # Check whether email already exists
-    existing_role = (
-        db.query(UserProfile)
-        .filter(UserProfile.role == userprofile_data.role)
-        .first()
-    )
-
-    if existing_role:
-        raise ValueError("Role already created")
+from entity.userprofile import UserProfileEntity
 
 
-    # Create user entity
-    new_userprofile = UserProfile(
-        role = userprofile_data.role,
-        description = userprofile_data.description
-    )
+class CreateUserProfileControl:
 
-    # Save to database
-    db.add(new_userprofile)
-    db.commit()
-    db.refresh(new_userprofile)
+    # Initializes the Entity for accessing user profile data
+    def __init__(self, db):
+        self.userprofile_entity = UserProfileEntity(db)
 
-    return new_userprofile
+    def execute(self, userprofile_data):
 
+        # Check whether the role is already created
+        existing_profile = self.userprofile_entity.get_by_role(
+            userprofile_data.role
+        )
+
+        if existing_profile:
+            raise ValueError("Role already exists")
+
+        # Prepare the new role's info
+        profile_data = {
+            "role": userprofile_data.role,
+            "description": userprofile_data.description
+        }
+        
+        # Return newly created userprofile to Boundary
+        return self.userprofile_entity.create(profile_data)

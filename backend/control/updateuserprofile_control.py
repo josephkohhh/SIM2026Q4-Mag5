@@ -1,57 +1,33 @@
+# updateuserprofile_control.py - handles user profile update business logic
 
-# updateuserprofile_control.py
-
-from entity.userprofile import UserProfile
+from entity.userprofile import UserProfileEntity
 
 
-def update_userprofile(db, profile_id, update_data):
+class UpdateUserProfileControl:
 
-    # Find existing user profile
-    user_profile = (
-        db.query(UserProfile)
-        .filter(UserProfile.profile_id == profile_id)
-        .first()
-    )
+    # Initializes the Entity for accessing user profile
+    def __init__(self, db):
+        self.userprofile_entity = UserProfileEntity(db)
 
-    if not user_profile:
-        raise LookupError("User profile not found")
+    def execute(self, profile_id: int, update_data):
+        profile = self.userprofile_entity.get_by_id(profile_id)
 
-    # Get only fields provided by the admin
-    update_fields = update_data.model_dump(exclude_unset=True)
+        if not profile:
+            raise LookupError("User profile not found")
 
-    if not update_fields:
-        raise ValueError("No fields provided for update")
+        updates = update_data.model_dump(exclude_unset=True)
 
-    # Validate and update profile fields
-    for field, value in update_fields.items():
+        if not updates:
+            raise ValueError("No fields provided for update")
 
-        if field == "role":
-            value = value.strip()
+        existing_profile = self.userprofile_entity.get_by_role(
+            updates.get("role", profile.role)
+        )
 
-            if not value:
-                raise ValueError("Role name cannot be empty")
+        if existing_profile and existing_profile.profile_id != profile_id:
+            raise ValueError("Role already exists")
 
-            existing_profile = (
-                db.query(UserProfile)
-                .filter(
-                    UserProfile.role == value,
-                    UserProfile.profile_id != profile_id
-                )
-                .first()
-            )
 
-            if existing_profile:
-                raise ValueError("Role name already exists")
-
-        elif field == "description":
-            value = value.strip()
-
-            if not value:
-                raise ValueError("Description cannot be empty")
-
-        setattr(user_profile, field, value)
-
-    db.commit()
-    db.refresh(user_profile)
-
-    return user_profile
+        # Return the updated user profile back to Boundary
+        return self.userprofile_entity.update(profile, updates)
+    

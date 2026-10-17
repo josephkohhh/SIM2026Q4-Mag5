@@ -5,26 +5,26 @@ from sqlalchemy.orm import Session
 
 from database.database import get_db
 from schemas.getuseraccount_schema import GetUserAccountResponse
-from control.getuseraccount_control import get_useraccount_by_id
-
+from control.getuseraccount_control import GetUserAccountControl
 
 router = APIRouter()
 
-
-# Get user account by ID
+# get user_id endpint
 @router.get(
-    "/useraccount/{user_id}",
+    "/useraccount/{user_email}",
     response_model=GetUserAccountResponse,
     status_code=status.HTTP_200_OK
 )
 def get_useraccount(
-    user_id: int,
+    email: str,
     db: Session = Depends(get_db)
 ):
-    try:
-        # Call control to retrieve account
-        user = get_useraccount_by_id(db, user_id)
+    # Create the Control and provide the database session
+    control = GetUserAccountControl(db)
 
+    try:
+        # Pass user email to the Control
+        user = control.execute(email)
         return user
 
     except LookupError as error:

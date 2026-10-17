@@ -1,45 +1,24 @@
-# updateuseraccount_control.py
+# updateuseraccount_control.py - handles user account update business logic
 
-from entity.useraccount import UserAccount, RoleEnum, StatusEnum
-from utils.security import hash_password
+from entity.useraccount import UserAccountEntity
 
 
-def update_useraccount(db, user_id, update_data):
+class UpdateUserAccountControl:
 
-    # Find existing user account
-    user = (
-        db.query(UserAccount)
-        .filter(UserAccount.user_id == user_id)
-        .first()
-    )
+    # Initializes the Entity for accessing user account
+    def __init__(self, db):
+        self.user_entity = UserAccountEntity(db)
 
-    if not user:
-        raise LookupError("User account not found")
+    def execute(self, user_email: str, update_data):
+        user = self.user_entity.get_by_email(user_email)
 
-    # Get only fields provided by the user admin
-    update_fields = update_data.model_dump(exclude_unset=True)
+        if not user:
+            raise LookupError("User account not found")
 
-    if not update_fields:
-        raise ValueError("No fields provided for update")
+        updates = update_data.model_dump(exclude_unset=True)
 
-    for field, value in update_fields.items():
+        if not updates:
+            raise ValueError("No fields provided for update")
 
-        if field == "password":
-            if not value:
-                raise ValueError("Password cannot be empty")
-
-            user.password_hash = hash_password(value)
-
-        elif field == "role":
-            user.role = RoleEnum(value)
-
-        elif field == "status":
-            user.status = StatusEnum(value)
-
-        else:
-            setattr(user, field, value)
-
-    db.commit()
-    db.refresh(user)
-
-    return user
+        # Return the updated user info back to Boundary
+        return self.user_entity.update(user, updates)

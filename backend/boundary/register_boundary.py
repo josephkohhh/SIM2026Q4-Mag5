@@ -1,31 +1,33 @@
-# register_boundary.py - boundary for user registration
+# register_boundary.py - handles user registration requests and HTTP responses
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from database.database import get_db 
-from schemas.register_schema import RegisterRequest, RegisterResponse
-from control.register_control import register_useraccount
-
+from database.database import get_db
+from control.register_control import RegisterControl
+from schemas.register_schema import RegisterRequest
 
 router = APIRouter()
 
-# register endpoint 
-@router.post("/register",response_model=RegisterResponse,status_code=status.HTTP_201_CREATED)
-def register(register_data: RegisterRequest, db: Session = Depends(get_db)):
+# Register endpoint
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+def register_user(
+    register_data: RegisterRequest,
+    db: Session = Depends(get_db),
+):
+    # Create the Control and provide the database session
+    control = RegisterControl(db)
 
     try:
-        # call to register user 
-        user = register_useraccount(db, register_data)
-
-        return RegisterResponse( 
-            message = "Registered successfully!",
-            name = user.name, 
-            )
-
+        # Pass registration info to the Control
+        user = control.execute(register_data)
+        return {
+            "message": f"User account {user.name} created successfully"
+        }
+    
+     # Convert registration errors into an HTTP 400 response
     except ValueError as error:
         raise HTTPException(
-            status_code = status.HTTP_400_BAD_REQUEST,
-            detail = str(error),
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
         ) from error
-

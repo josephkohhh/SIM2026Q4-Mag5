@@ -1,22 +1,19 @@
-# deleteuserprofile_control.py - Control for deleting a user profile
+# deleteuserprofile_control.py - handles user profile deletion business logic
 
-from entity.userprofile import UserProfile
+from entity.userprofile import UserProfileEntity
 
 
-def delete_userprofile(db, profile_id):
+class DeleteUserProfileControl:
 
-    # Find existing user profile
-    user_profile = (
-        db.query(UserProfile)
-        .filter(UserProfile.profile_id == profile_id)
-        .first()
-    )
+    # Initializes the Entity for accessing user account
+    def __init__(self, db):
+        self.userprofile_entity = UserProfileEntity(db)
 
-    if not user_profile:
-        raise LookupError("User profile not found")
+    def execute(self, profile_id: int):
+        user_profile = self.userprofile_entity.get_by_id(profile_id)
 
-    # Delete user profile
-    db.delete(user_profile)
-    db.commit()
+        if not user_profile:
+            raise LookupError("User profile not found")
 
-    return user_profile
+        # Return the deleted userprofile info back to Boundary
+        return self.userprofile_entity.delete(user_profile)
