@@ -18,7 +18,7 @@ class LoginControl:
         email = login_data.get("email")
         password = login_data.get("password")
 
-        # field validation 
+        # Field validation 
         if not email or not password:
             raise ValueError("Email and password are required.")
 
