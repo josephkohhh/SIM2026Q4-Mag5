@@ -26,7 +26,7 @@ class LoginControl:
             # Call the get_by_email entity method to get user account info
             user = self.account_entity.get_by_email(email)
 
-        # catch email not found from entity
+        # catch email_not_found error from entity
         except LookupError:
             raise ValueError("Invalid email or password.")
             
@@ -38,7 +38,7 @@ class LoginControl:
 
         # Generate access token after successful validation
         access_token = create_access_token(user.user_id, user.role.value)
-
+        
         return {
             "message": f"Welcome {user.name} !",
             "access_token": access_token

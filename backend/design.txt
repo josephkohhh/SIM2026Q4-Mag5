@@ -93,12 +93,6 @@ register
   "phone_no": "123456789"
 }
 
-login
-{
-  "email": "admin01@example.com",
-  "password": "password"
-}
-
 login 
 {
   "email": "alice123@example.com",
