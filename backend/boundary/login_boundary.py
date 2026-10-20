@@ -1,49 +1,45 @@
 # login_boundary.py - handles login requests and HTTP responses
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy.orm import Session
-
-from database.database import get_db
-from schemas.login_schema import LoginRequest, LoginResponse
+from fastapi import APIRouter, HTTPException, Response
 from control.login_control import LoginControl
 
+# Initialise the controller object
+login_control = LoginControl()
 
 router = APIRouter()
 
 # login endpoint
-@router.post(
-    "/login",
-    response_model=LoginResponse,
-    status_code=status.HTTP_200_OK,
-)
-def login(
-    data: LoginRequest,
-    response: Response,
-    db: Session = Depends(get_db),
-):
+@router.post("/login")
+def login(login_data: dict, response: Response):
     try:
-        # Authenticate the user and obtain the access token
-        control = LoginControl(db)
-        user, token = control.execute(data)
+        # Call the controller method
+        result = login_control.login(login_data)
 
-        # Setting token in a HTTP-only cookie is a Boundary responsibilty
+        token = result["access_token"]
+
+        # Set token in an HttpOnly cookie
         response.set_cookie(
             key="access_token",
             value=token,
             httponly=True,
-            secure=False,  # Use True when deployed over HTTPS
+            secure=False, # True only in HTTPS
             samesite="lax",
             max_age=15 * 60,
             path="/",
         )
 
-        # Return the login success response
-        return LoginResponse(
-            message=f"Welcome {user.name}",
-        )
+        return {
+            "message": result["message"]
+        }
 
     except ValueError as error:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(error),
+            status_code=400,
+            detail=str(error)
         ) from error
+
+    except RuntimeError as error:
+        raise HTTPException(
+            status_code=500,
+            detail=str(error)
+        ) from error        

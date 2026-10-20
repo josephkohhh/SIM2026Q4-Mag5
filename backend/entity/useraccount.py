@@ -88,8 +88,7 @@ class UserAccountEntity:
             except SQLAlchemyError:
                 db.rollback()
                 raise
-  
- 
+
     # CREATE: Create a new user account
     def create(self, user_data: dict):
 

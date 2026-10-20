@@ -114,3 +114,8 @@ update
   "phone_no": "123456",
   "status": "ACTIVE"
 }
+
+{
+  "role": "Admin",
+  "description": "Administrator access"
+}

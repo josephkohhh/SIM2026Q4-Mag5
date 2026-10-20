@@ -1,8 +1,6 @@
-# logout_control.py - service for handling user logout
+# logout_control.py - handles user logout
 
-# Logout a user
-def logout_useraccount():
-
-    # cookie clearing is handled by the boundary
+class LogoutControl:
     
-    return {"message": "Logout successful"}
+    def logout(self):
+        return {"message": "Logout successful."}

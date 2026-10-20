@@ -8,41 +8,40 @@ from utils.jsonwebtoken import create_access_token
 
 class LoginControl:
 
-    # Initializes the Entity for accessing user account data
-    def __init__(self, db):
-        self.user_entity = UserAccountEntity(db)
+    # Initialise the entity object
+    def __init__(self):
+        self.account_entity = UserAccountEntity()
 
-    # Authenticate the user and generate an access token
-    def execute(self, login_data):
+    # Login method
+    def login(self, login_data: dict):
 
-        # Verify the email exists
-        existing_user = self.user_entity.get_by_email(
-            login_data.email
-        )
+        email = login_data.get("email")
+        password = login_data.get("password")
 
-        if not existing_user:
-            raise ValueError("Invalid email or password")
+        # field validation 
+        if not email or not password:
+            raise ValueError("Email and password are required.")
 
-        # Verify the submitted password
-        is_password_valid = verify_password(
-            login_data.password,
-            existing_user.password_hash,
-        )
+        try:
+            # Call the get_by_email entity method to get user account info
+            user = self.account_entity.get_by_email(email)
 
-        if not is_password_valid:
-            raise ValueError("Invalid email or password")
+        # catch email not found from entity
+        except LookupError:
+            raise ValueError("Invalid email or password.")
+            
+        if user.status != StatusEnum.ACTIVE:
+            raise ValueError("Account has been suspended.")
 
-        # Verify whether the account is active
-        if existing_user.status != StatusEnum.ACTIVE:
-            raise ValueError("This account has been suspended")
+        if not verify_password(password, user.password_hash):
+            raise ValueError("Invalid email or password.")
 
+        # Generate access token after successful validation
+        access_token = create_access_token(user.user_id, user.role.value)
 
-        # After passing all login authentication
-        # Generate an access token for the authenticated user
-        token = create_access_token(
-            existing_user.user_id,
-            existing_user.role,
-        )
+        return {
+            "message": f"Welcome {user.name} !",
+            "access_token": access_token
+            }
 
-        # Return the user and token to the Boundary
-        return existing_user, token
+        

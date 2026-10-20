@@ -1,31 +1,26 @@
-# register_control.py - handles user registration business logic
+# register_control.py - handles user registration
 
-from entity.useraccount import UserAccountEntity
-from utils.security import hash_password
+from entity.useraccount import UserAccountEntity, RoleEnum
 
 
 class RegisterControl:
 
-    # Initializes the Entity to access user account database operations
-    def __init__(self, db):
-        self.user_entity = UserAccountEntity(db)
+    # Initialise the entity object
+    def __init__(self):
+        self.useraccount_entity = UserAccountEntity()
 
-    def execute(self, register_data):
-        existing_user = self.user_entity.get_by_email(
-            register_data.email
-        )
-
-        if existing_user:
-            raise ValueError("User already exist")
-
-        user_data = {
-            "email": register_data.email,
-            "password_hash": hash_password(register_data.password),
-            "role": register_data.role,
-            "name": register_data.name,
-            "surname": register_data.surname,
-            "phone_no": register_data.phone_no,
+    # Register method
+    def register_useraccount(self, user_data: dict):
+        role = user_data.get("role")
+        
+        # Only allow certain roles when user registers
+        allowed_roles = {
+            RoleEnum.CUSTOMER,
+            RoleEnum.INTERIOR_DESIGNER
         }
 
-        # Return newly registered user back to boundary
-        return self.user_entity.create(user_data)
+        if role not in allowed_roles:
+            raise ValueError("Invalid registration role.")
+        
+        # If validation pass, call the entity method
+        return self.useraccount_entity.create(user_data)
