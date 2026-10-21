@@ -13,7 +13,7 @@ router = APIRouter()
 def login(login_data: dict, response: Response):
     try:
         # Call the controller method
-        result = login_control.login(login_data)
+        result = login_control.login_user(login_data)
 
         token = result["access_token"]
 

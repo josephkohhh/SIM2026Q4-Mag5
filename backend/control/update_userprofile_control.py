@@ -1,4 +1,4 @@
-# update_userprofile_control.py - handles user profile update business logic
+# update_userprofile_control.py - handles user profile updates
 
 from entity.userprofile import UserProfileEntity
 
@@ -10,8 +10,8 @@ class UpdateUserProfileControl:
         self.userprofile_entity = UserProfileEntity()
 
     # Call the Entity method
-    def update_userprofile(self, profile_id: int, update_data: dict):
-        return self.userprofile_entity.update_userprofile(profile_id, update_data)
+    def update_userprofile(self, role: str, update_data: dict):
+        return self.userprofile_entity.update(role, update_data)
 
 
     

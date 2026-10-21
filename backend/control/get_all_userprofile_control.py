@@ -1,4 +1,4 @@
-# get_alluserprofile_control.py - handles retrieving all user profiles
+# get_all_userprofile_control.py - handles retrieving all user profiles
 
 from entity.userprofile import UserProfileEntity
 

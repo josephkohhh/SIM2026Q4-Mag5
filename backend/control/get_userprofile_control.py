@@ -11,10 +11,5 @@ class GetUserProfileControl:
 
     # Call the Entity method
     def get_by_role(self, role: str):
-        user_profile = self.userprofile_entity.get_by_role(role)
+        return self.userprofile_entity.get_by_role(role)
 
-        return {
-          "profile_id": user_profile.profile_id,
-          "role": user_profile.role,
-          "description": user_profile.description
-        }

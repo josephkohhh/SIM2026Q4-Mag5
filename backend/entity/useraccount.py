@@ -12,7 +12,9 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from utils.security import hash_password
+from utils.security import hash_password, verify_password
+from utils.jsonwebtoken import create_access_token
+
 
 # Define Python Enums for PostgreSQL ENUM types
 class RoleEnum(str, Enum):
@@ -69,7 +71,44 @@ class UserAccount(Base):
 # UserAccountEntity class responsible for database operations (CRUD)
 class UserAccountEntity:
 
-    # READ: Find a user account by email
+    # LOGIN: Authenticate a user account
+    def login(self, login_data: dict):
+
+        email = login_data.get("email")
+        password = login_data.get("password")
+
+        # Retrieve user account by email
+        try:
+            user = self.get_by_email(email)
+
+        except LookupError:
+            raise ValueError(
+                "Invalid email or password."
+            ) from None
+
+        # Check if account is active
+        if user.status != StatusEnum.ACTIVE:
+            raise ValueError("Account has been suspended.")
+
+        # Verify password
+        if not verify_password(password, user.password_hash):
+            raise ValueError(
+                "Invalid email or password."
+            )
+
+        # Generate access token after successful validation
+        access_token = create_access_token(
+            user.user_id,
+            user.role.value
+        )
+
+        return {
+            "message": f"Welcome {user.name}!",
+            "access_token": access_token
+        }
+
+
+    # READ: Retrieve a user account by email
     def get_by_email(self, email: str):
         with session() as db:
             try:
@@ -92,41 +131,12 @@ class UserAccountEntity:
     # CREATE: Create a new user account
     def create(self, user_data: dict):
 
-        # Validate input
-        if not isinstance(user_data, dict):
-            raise ValueError("User data must be a dictionary.")
-
-        required_fields = {
-            "email",
-            "password",
-            "role",
-            "name",
-            "surname",
-            "phone_no"
-        }
-
-        if not required_fields.issubset(user_data):
-            raise ValueError("All required user account fields must be provided.")
-
         email = user_data.get("email")
         password = user_data.get("password")
         role = user_data.get("role")
         name = user_data.get("name")
         surname = user_data.get("surname")
         phone_no = user_data.get("phone_no")
-
-        # Validate email
-        if not isinstance(email, str) or not email.strip():
-            raise ValueError("Email must be a non-empty string.")
-
-        email = email.strip()
-
-        if len(email) > 255:
-            raise ValueError("Email cannot exceed 255 characters.")
-
-        # Validate password
-        if not isinstance(password, str) or not password:
-            raise ValueError("Password must be a non-empty string.")
 
         # Validate role
         if isinstance(role, str):
@@ -136,33 +146,6 @@ class UserAccountEntity:
                 raise ValueError("Invalid user role.") from None
         elif not isinstance(role, RoleEnum):
             raise ValueError("Role must be a valid user role.")
-
-        # Validate name
-        if not isinstance(name, str) or not name.strip():
-            raise ValueError("Name must be a non-empty string.")
-
-        name = name.strip()
-
-        if len(name) > 100:
-            raise ValueError("Name cannot exceed 100 characters.")
-
-        # Validate surname
-        if not isinstance(surname, str) or not surname.strip():
-            raise ValueError("Surname must be a non-empty string.")
-
-        surname = surname.strip()
-
-        if len(surname) > 100:
-            raise ValueError("Surname cannot exceed 100 characters.")
-
-        # Validate phone number
-        if not isinstance(phone_no, str) or not phone_no.strip():
-            raise ValueError("Phone number must be a non-empty string.")
-
-        phone_no = phone_no.strip()
-
-        if len(phone_no) > 30:
-            raise ValueError("Phone number cannot exceed 30 characters.")
 
         # Hash the password before storing it
         hashed_password = hash_password(password)
@@ -215,28 +198,6 @@ class UserAccountEntity:
     # UPDATE: Update an existing user account by email
     def update(self, email: str, updates: dict):
 
-        if not isinstance(email, str) or not email.strip():
-            raise ValueError("Email must be a non-empty string.")
-
-        if not isinstance(updates, dict):
-            raise ValueError("Update data must be a dictionary.")
-
-        if not updates:
-            raise ValueError("Update data cannot be empty.")
-
-        # Only allow these fields to be updated
-        allowed_fields = {
-            "name",
-            "surname",
-            "password",
-            "role",
-            "phone_no",
-            "status",
-        }
-
-        if not set(updates).issubset(allowed_fields):
-            raise ValueError("Invalid update fields.")
-
         with session() as db:
             try:
                 # Find the account by email first
@@ -286,7 +247,7 @@ class UserAccountEntity:
                 ) from e
 
     # SUSPEND: Set user account status to INACTIVE
-    def suspend_useraccount(self, email: str):
+    def suspend(self, email: str):
         with session() as db:
             try:
                 # Find the user account to suspend

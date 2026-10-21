@@ -10,11 +10,11 @@ update_userprofile_control = UpdateUserProfileControl()
 
 # update user profile endpoint
 @router.patch("/update_userprofile")
-def update_userprofile(profile_id: int,update_data: dict):
+def update_userprofile(role: str,update_data: dict):
 
     try:
         # Call the controller method
-         return update_userprofile_control.update_userprofile(profile_id,update_data)
+         return update_userprofile_control.update_userprofile(role,update_data)
 
     except ValueError as error:
         raise HTTPException(

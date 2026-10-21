@@ -10,4 +10,4 @@ class SuspendUserAccountControl:
 
     # Call the Entity method
     def suspend_useraccount(self, email: str):
-        return self.useraccount_entity.suspend_useraccount(email)
+        return self.useraccount_entity.suspend(email)

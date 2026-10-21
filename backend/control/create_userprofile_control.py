@@ -10,4 +10,4 @@ class CreateUserProfileControl:
 
     # Call the Entity method
     def create_userprofile(self, profile_data: dict):
-        return self.userprofile_entity.create_userprofile(profile_data)
+        return self.userprofile_entity.create(profile_data)

@@ -17,6 +17,11 @@ from boundary.delete_userprofile_boundary import router as delete_userprofile_ro
 from boundary.get_all_userprofile_boundary import router as get_all_userprofile_router
 from boundary.get_userprofile_boundary import router as get_userprofile_router
 
+from boundary.create_idpcategory_boundary import router as create_idpcategory_router
+from boundary.update_idpcategory_boundary import router as update_idpcategory_router
+from boundary.delete_idpcategory_boundary import router as delete_idpcategory_router
+from boundary.get_all_idpcategory_boundary import router as get_all_idpcategory_router
+from boundary.get_idpcategory_boundary import router as get_idpcategory_router
 
 router = APIRouter()
 
@@ -38,9 +43,12 @@ router.include_router(create_userprofile_router)
 router.include_router(update_userprofile_router)
 router.include_router(delete_userprofile_router)
 
-
-
-
+# idp category
+router.include_router(create_idpcategory_router)
+router.include_router(update_idpcategory_router)
+router.include_router(delete_idpcategory_router)
+router.include_router(get_all_idpcategory_router)
+router.include_router(get_idpcategory_router)
 
 
 

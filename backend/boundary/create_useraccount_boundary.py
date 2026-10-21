@@ -1,4 +1,4 @@
-# createuseraccount_boundary.py - boundary for admin to create user account
+# create_useraccount_boundary.py - boundary for admin to create user account
 
 from fastapi import APIRouter, HTTPException
 from control.create_useraccount_control import CreateUserAccountControl

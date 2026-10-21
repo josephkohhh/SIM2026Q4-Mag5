@@ -12,7 +12,8 @@ class GetUserAccountControl:
     # Call the Entity method
     def get_by_email(self, email: str):
         user_account = self.useraccount_entity.get_by_email(email)
-            
+
+        # Return specific fields ooly  
         return {
           "user_id": user_account.user_id,  
           "email": user_account.email,
@@ -21,6 +22,4 @@ class GetUserAccountControl:
           "surname": user_account.surname,
           "phone no": user_account.phone_no,
           "status": user_account.status,
-          "created_at": user_account.created_at,
-          "updated_at": user_account.updated_at
         }

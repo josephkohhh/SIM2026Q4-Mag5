@@ -8,7 +8,7 @@ router = APIRouter()
 # Initialise the controller object
 delete_userprofile_control = DeleteUserProfileControl()
 
-# delete user profile endpoint
+# Delete user profile endpoint
 @router.delete("/delete_userprofile/{role}")
 def delete_userprofile(role: str):
     try:

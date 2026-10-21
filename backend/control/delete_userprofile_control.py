@@ -11,4 +11,4 @@ class DeleteUserProfileControl:
 
     # Call the Entity method
     def delete_userprofile(self, role: str):
-        return self.userprofile_entity.delete_userprofile(role)
+        return self.userprofile_entity.delete(role)
