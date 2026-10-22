@@ -12,7 +12,7 @@ get_userprofile_control = GetUserProfileControl()
 @router.get("/get_userprofile/{role}")
 def get_userprofile(role: str):
     try:
-        return get_userprofile_control.get_by_role(role)
+        return get_userprofile_control.get_userprofile(role)
 
     except LookupError as error:
         raise HTTPException(

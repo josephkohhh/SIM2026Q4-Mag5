@@ -12,7 +12,7 @@ get_idpcategory_control = GetIdpCategoryControl()
 @router.get("/get_idpcategory/{category_code}")
 def get_idpcategory(category_code: str):
     try:
-        return get_idpcategory_control.get_by_code(category_code)
+        return get_idpcategory_control.get_idpcategory(category_code)
 
     except LookupError as error:
         raise HTTPException(

@@ -10,10 +10,10 @@ logout_control = LogoutControl()
 
 # logout endpoint
 @router.post("/logout")
-def logout(response: Response):
+def logout_user(response: Response):
 
     # Call the controller method 
-    result = logout_control.logout()
+    result = logout_control.logout_user()
 
     # Clear the access_token 
     response.delete_cookie(

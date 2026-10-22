@@ -15,7 +15,6 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from utils.security import hash_password, verify_password
 from utils.jsonwebtoken import create_access_token
 
-
 # Define Python Enums for PostgreSQL ENUM types
 class RoleEnum(str, Enum):
     CUSTOMER = "CUSTOMER"
@@ -28,7 +27,6 @@ class StatusEnum(str, Enum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
 
-# useraccount.py - contains the UserAccount model and its database operations
 
 # SQLAlchemy model representing the UserAccount table
 class UserAccount(Base):

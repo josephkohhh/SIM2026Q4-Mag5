@@ -113,3 +113,17 @@ update
   "role": "Admin",
   "description": "Administrator access"
 }
+
+{
+  "category_code": "Commercial",
+  "description": "lorem ipsmum"
+}
+
+company profile
+{
+  "user_id": 1,
+  "company_name": "Tech Solutions Pte Ltd",
+  "description": "A software development company specialising in web applications.",
+  "phone_no": "91234567",
+  "address": "123 Orchard Road, Singapore"
+}

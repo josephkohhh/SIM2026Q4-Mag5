@@ -10,7 +10,7 @@ router = APIRouter()
 
 # login endpoint
 @router.post("/login")
-def login(login_data: dict, response: Response):
+def login_user(login_data: dict, response: Response):
     try:
         # Call the controller method
         result = login_control.login_user(login_data)

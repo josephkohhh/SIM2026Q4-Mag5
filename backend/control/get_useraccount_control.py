@@ -10,7 +10,7 @@ class GetUserAccountControl:
         self.useraccount_entity = UserAccountEntity()
 
     # Call the Entity method
-    def get_by_email(self, email: str):
+    def get_useraccount(self, email: str):
         user_account = self.useraccount_entity.get_by_email(email)
 
         # Return specific fields ooly  

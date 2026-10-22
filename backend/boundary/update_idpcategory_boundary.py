@@ -10,7 +10,7 @@ update_idpcategory_control = UpdateIdpCategoryControl()
 
 # Update category endpoint
 @router.patch("/update_idpcategory")
-def update_userprofile(category_code: str,update_data: dict):
+def update_idpcategory(category_code: str,update_data: dict):
 
     try:
         # Call the controller method

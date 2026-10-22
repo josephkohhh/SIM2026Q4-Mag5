@@ -23,6 +23,12 @@ from boundary.delete_idpcategory_boundary import router as delete_idpcategory_ro
 from boundary.get_all_idpcategory_boundary import router as get_all_idpcategory_router
 from boundary.get_idpcategory_boundary import router as get_idpcategory_router
 
+from boundary.create_companyprofile_boundary import router as create_companyprofile_router
+from boundary.update_companyprofile_boundary import router as update_companyprofile_router
+from boundary.suspend_companyprofile_boundary import router as suspend_companyprofile_router
+from boundary.get_companyprofile_boundary import router as get_companyprofile_router
+
+
 router = APIRouter()
 
 # register & login/logout
@@ -49,6 +55,14 @@ router.include_router(update_idpcategory_router)
 router.include_router(delete_idpcategory_router)
 router.include_router(get_all_idpcategory_router)
 router.include_router(get_idpcategory_router)
+
+# company profile 
+router.include_router(create_companyprofile_router)
+router.include_router(update_companyprofile_router)
+router.include_router(suspend_companyprofile_router)
+router.include_router(get_companyprofile_router)
+
+
 
 
 

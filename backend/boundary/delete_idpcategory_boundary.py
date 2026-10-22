@@ -10,7 +10,7 @@ delete_idpcategory_control = DeleteIdpCategoryControl()
 
 # Delete category endpoint
 @router.delete("/delete_category/{category_code}")
-def delete_category(category_code: str):
+def delete_idpcategory(category_code: str):
     try:
         # Call the controller method
         return delete_idpcategory_control.delete_idpcategory(category_code)

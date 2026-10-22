@@ -2,5 +2,5 @@
 
 class LogoutControl:
     
-    def logout(self):
+    def logout_user(self):
         return {"message": "Logout successful."}
