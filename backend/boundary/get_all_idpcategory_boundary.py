@@ -14,7 +14,7 @@ get_all_idpcategory_control = GetAllIdpCategoryControl()
 def get_all_idpcategories():
 
         # Call the controller method
-        categories = get_all_idpcategory_control.get_all()
+        categories = get_all_idpcategory_control.get_all_idpcategories()
 
         return [
             {

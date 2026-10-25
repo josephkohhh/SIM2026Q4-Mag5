@@ -10,5 +10,5 @@ class GetAllIdpCategoryControl:
         self.idpcategory_entity = IdpCategoryEntity()
 
     # Call the Entity method
-    def get_all(self):
+    def get_all_idpcategories(self):
         return self.idpcategory_entity.get_all()

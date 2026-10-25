@@ -13,7 +13,7 @@ get_all_userprofile_control = GetAllUserProfileControl()
 def get_all_user_profiles():
 
         # Call the controller method
-        user_profiles = get_all_userprofile_control.get_all()
+        user_profiles = get_all_userprofile_control.get_all_user_profiles()
 
         return [
             {

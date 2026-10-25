@@ -10,5 +10,5 @@ class GetAllUserProfileControl:
         self.userprofile_entity = UserProfileEntity()
 
     # Call the Entity method
-    def get_all(self):
+    def get_all_user_profiles(self):
         return self.userprofile_entity.get_all()
