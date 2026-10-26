@@ -28,6 +28,11 @@ from boundary.update_companyprofile_boundary import router as update_companyprof
 from boundary.suspend_companyprofile_boundary import router as suspend_companyprofile_router
 from boundary.get_companyprofile_boundary import router as get_companyprofile_router
 
+from boundary.create_project_boundary import router as create_project_router
+from boundary.update_project_boundary import router as update_project_router
+from boundary.delete_project_boundary import router as delete_project_router
+from boundary.get_all_project_boundary import router as get_all_project_router
+from boundary.get_project_boundary import router as get_project_router
 
 router = APIRouter()
 
@@ -62,6 +67,13 @@ router.include_router(update_companyprofile_router)
 router.include_router(suspend_companyprofile_router)
 router.include_router(get_companyprofile_router)
 
+
+# project 
+router.include_router(create_project_router)
+router.include_router(update_project_router)
+router.include_router(delete_project_router)
+router.include_router(get_all_project_router)
+router.include_router(get_project_router)
 
 
 

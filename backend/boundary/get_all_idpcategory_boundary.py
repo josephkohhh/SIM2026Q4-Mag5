@@ -1,4 +1,4 @@
-# get_idpcategory_boundary.py - Boundary to get all categories
+# get_all_idpcategory_boundary.py - Boundary to get all categories
 
 from fastapi import APIRouter
 from control.get_all_idpcategory_control import GetAllIdpCategoryControl
