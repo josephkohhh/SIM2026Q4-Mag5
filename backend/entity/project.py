@@ -1,6 +1,7 @@
 # project.py - Contains the Project model and database operations
 
 from database.database import Base, session
+import base64
 from sqlalchemy import (
     Column,
     Integer,
@@ -50,7 +51,7 @@ class Project(Base):
 
     project_name = Column(String(150), nullable=False, unique=True)
     description = Column(Text, nullable=False)
-    design_details = Column(Text, nullable=False)
+    category_code = Column(String(100), nullable=False)
     project_image = Column(LargeBinary, nullable=False)
     status = Column(
         SQLEnum(StatusEnum, name="project_status"),
@@ -74,12 +75,34 @@ class Project(Base):
 # ProjectEntity class responsible for database operations (CRUD)
 class ProjectEntity:
 
+    # HELPER: Convert Project obj into JSON-serializable data
+    def _project_to_dict(self, project):
+        return {
+            "project_id": project.project_id,
+            "user_id": project.user_id,
+            "companyprofile_id": project.companyprofile_id,
+            "project_name": project.project_name,
+            "description": project.description,
+            "category_code": project.category_code,
+            "project_image": (
+                base64.b64encode(project.project_image).decode("utf-8")
+                if project.project_image
+                else None
+            ),
+            "status": project.status.value,
+            "created_at": project.created_at.isoformat(),
+            "updated_at": project.updated_at.isoformat(),
+        }
+
     # READ: Retrieve all projects
     def get_all(self):
-
         with session() as db:
             try:
-                return db.query(Project).all()
+                projects = db.query(Project).all()
+                return [
+                    self._project_to_dict(project)
+                    for project in projects
+                ]
             except SQLAlchemyError:
                 db.rollback()
                 raise
@@ -94,12 +117,11 @@ class ProjectEntity:
                     .first()
                 )
 
-                # Raise an error if the project does not exist
                 if project is None:
                     raise LookupError("Project not found.")
 
-                return project
-        
+                return self._project_to_dict(project)
+
             except SQLAlchemyError:
                 db.rollback()
                 raise
@@ -111,7 +133,7 @@ class ProjectEntity:
         companyprofile_id = project_data.get("companyprofile_id")
         project_name = project_data.get("project_name")
         description = project_data.get("description")
-        design_details = project_data.get("design_details")
+        category_code = project_data.get("category_code")
         project_image = project_data.get("project_image")
         status = project_data.get("status", StatusEnum.ONGOING)
 
@@ -134,7 +156,7 @@ class ProjectEntity:
                     companyprofile_id=companyprofile_id,
                     project_name=project_name.strip(),
                     description=description,
-                    design_details=design_details,
+                    category_code=category_code,
                     project_image=project_image,
                     status=status,
                 )
@@ -160,20 +182,34 @@ class ProjectEntity:
 
             
     # UPDATE: Update an existing project by project ID
-    def update(self, project_name: int, updates: dict):
+    def update(self, project_name: str, updates: dict):
 
         with session() as db:
             try:
                 project = (
                     db.query(Project)
-                    .filter(Project.project_name == project_name)
+                    .filter(Project.project_name == project_name.strip())
                     .first()
                 )
 
                 if project is None:
                     raise LookupError("Project not found.")
 
+                # Only allow these fields to be updated
+                allowed_fields = {
+                    "project_name",
+                    "description",
+                    "category_code",
+                    "project_image",
+                    "status",
+                }
+
                 for field, value in updates.items():
+
+                    if field not in allowed_fields:
+                        raise ValueError(
+                            f"Field '{field}' cannot be updated."
+                        )
 
                     # Validate project status
                     if field == "status":
@@ -189,11 +225,11 @@ class ProjectEntity:
                                 "Status must be a valid project status."
                             )
 
-                    # Validate required text fields
+                    # Validate text fields
                     if field in {
                         "project_name",
                         "description",
-                        "design_details",
+                        "category_code",
                     }:
                         if not isinstance(value, str) or not value.strip():
                             raise ValueError(
@@ -202,6 +238,13 @@ class ProjectEntity:
 
                         value = value.strip()
 
+                    # Image must be binary data
+                    if field == "project_image":
+                        if not isinstance(value, bytes) or not value:
+                            raise ValueError(
+                                "Project image must contain valid image bytes."
+                            )
+
                     setattr(project, field, value)
 
                 project.updated_at = datetime.now()
@@ -209,12 +252,18 @@ class ProjectEntity:
                 db.commit()
                 db.refresh(project)
 
-                return {"message": f"Project {project_name} has been updated successfully."}
+                return {
+                    "message": (
+                        f"Project {project.project_name} "
+                        "has been updated successfully."
+                    )
+                }
 
             except IntegrityError as e:
                 db.rollback()
                 raise ValueError(
-                    "Database constraint violation."
+                    "Database constraint violation. "
+                    "Check whether the project name already exists."
                 ) from e
 
             except SQLAlchemyError as e:

@@ -7,7 +7,7 @@ class CreateProjectControl:
 
     # Initialise the entity object
     def __init__(self):
-        self.project_entity = CreateProjectControl()
+        self.project_entity = ProjectEntity()
 
     # Call the Entity method
     def create_project(self, project_data: dict):
