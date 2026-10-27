@@ -34,6 +34,13 @@ from boundary.delete_project_boundary import router as delete_project_router
 from boundary.get_all_project_boundary import router as get_all_project_router
 from boundary.get_project_boundary import router as get_project_router
 
+from boundary.get_all_favorite_boundary import router as get_all_favorite_router
+from boundary.delete_favorite_boundary import router as delete_favorite_router
+from boundary.save_favorite_boundary import router as save_favorite_router
+
+
+
+
 router = APIRouter()
 
 # register & login/logout
@@ -67,13 +74,17 @@ router.include_router(update_companyprofile_router)
 router.include_router(suspend_companyprofile_router)
 router.include_router(get_companyprofile_router)
 
-
 # project 
 router.include_router(create_project_router)
 router.include_router(update_project_router)
 router.include_router(delete_project_router)
 router.include_router(get_all_project_router)
 router.include_router(get_project_router)
+
+# favorite
+router.include_router(get_all_favorite_router)
+router.include_router(delete_favorite_router)
+router.include_router(save_favorite_router)
 
 
 

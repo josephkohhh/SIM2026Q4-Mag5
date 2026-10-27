@@ -138,3 +138,9 @@ company profile
   "project_image": "https://example.com/images/office-design.jpg",
   "status": "ONGOING"
 }
+
+favorite
+{
+    "user_id": 4,
+    "project_id": 1
+}
