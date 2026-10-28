@@ -42,6 +42,7 @@ from boundary.get_projectview_boundary import router as get_projectview_router
 
 from boundary.get_shortlistcount_boundary import router as get_shortlistcount_router
 
+from boundary.generate_report_boundary import router as generate_report_router
 
 
 
@@ -96,7 +97,8 @@ router.include_router(get_projectview_router)
 # shortlist count
 router.include_router(get_shortlistcount_router)
 
-
+# report
+router.include_router(generate_report_router)
 
 
 
