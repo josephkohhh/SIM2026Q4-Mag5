@@ -10,9 +10,5 @@ class SaveFavoriteControl:
         self.favorite_entity = FavoriteEntity()
 
     # Call the Entity method
-    def save_favorite(self, favorite_data: dict):
-
-        user_id = favorite_data.get("user_id")
-        project_id = favorite_data.get("project_id")
-
+    def save_favorite(self, user_id: int, project_id: int):
         return self.favorite_entity.save(user_id, project_id)

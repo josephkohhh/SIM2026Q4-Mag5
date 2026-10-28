@@ -38,6 +38,10 @@ from boundary.get_all_favorite_boundary import router as get_all_favorite_router
 from boundary.delete_favorite_boundary import router as delete_favorite_router
 from boundary.save_favorite_boundary import router as save_favorite_router
 
+from boundary.get_projectview_boundary import router as get_projectview_router
+
+from boundary.get_shortlistcount_boundary import router as get_shortlistcount_router
+
 
 
 
@@ -86,7 +90,11 @@ router.include_router(get_all_favorite_router)
 router.include_router(delete_favorite_router)
 router.include_router(save_favorite_router)
 
+# project view
+router.include_router(get_projectview_router)
 
+# shortlist count
+router.include_router(get_shortlistcount_router)
 
 
 

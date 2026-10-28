@@ -4,7 +4,6 @@ from database.database import Base, session
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.sql import func
-from entity.project import Project
 
 
 class Favorite(Base):
@@ -52,18 +51,32 @@ class Favorite(Base):
 # FavoriteEntity class responsible for database operations (CRUD)
 class FavoriteEntity:
 
+    # READ: Retrieve the no of times project added to customers' favorite list
+    def get_count(self, project_id: int):
+
+        with session() as db:
+            try:
+                count = (
+                    db.query(func.count(Favorite.favourite_id))
+                    .filter(Favorite.project_id == project_id)
+                    .scalar()
+                )
+
+                return {
+                    "shortlist_count": count
+                }
+
+            except SQLAlchemyError:
+                db.rollback()
+                raise
 
     # READ: Retrieve all saved projects belonging to a customer
     def get_all(self, user_id: int):
 
         with session() as db:
             try:
-                favorites =  (
-                    db.query(Project)
-                    .join(
-                        Favorite,
-                        Favorite.project_id == Project.project_id
-                    )
+                favorites = (
+                    db.query(Favorite)
                     .filter(Favorite.user_id == user_id)
                     .order_by(Favorite.created_at.desc())
                     .all()
@@ -86,15 +99,6 @@ class FavoriteEntity:
 
         with session() as db:
             try:
-                # Check whether the project exists
-                project_exists = (
-                    db.query(Project)
-                    .filter(Project.project_id == project_id)
-                    .first()
-                )
-
-                if project_exists is None:
-                    raise LookupError("Project not found.")
 
                 # Check whether the project is already saved
                 existing = (
@@ -110,7 +114,7 @@ class FavoriteEntity:
                     raise ValueError(
                         "Project is already in your favorites."
                     )
-
+                # Create a new favorite record
                 favorite = Favorite(
                     user_id=user_id,
                     project_id=project_id
@@ -121,10 +125,7 @@ class FavoriteEntity:
                 db.refresh(favorite)
 
                 return {
-                    "message": (
-                        f"Project {project_exists.project_name} "
-                        "added to favorites successfully."
-                    )
+                    "message": "Project added to favorites successfully."
                 }
 
             except IntegrityError as e:

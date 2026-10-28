@@ -9,10 +9,10 @@ router = APIRouter()
 get_project_control = GetProjectControl()
 
 # get category by code endpoint
-@router.get("/get_project/{project_name}")
-def get_idpcategory(project_name: str):
+@router.get("/get_project/{project_name}/{user_id}")
+def get_idpcategory(project_name: str, user_id: int):
     try:
-        return get_project_control.get_project(project_name)
+        return get_project_control.get_project(project_name, user_id)
 
     except LookupError as error:
         raise HTTPException(

@@ -16,6 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from datetime import datetime 
 from enum import Enum
+from entity.projectview import ProjectViewEntity
 
 # Define Python Enums for PostgreSQL ENUM types
 class StatusEnum(str, Enum):
@@ -108,7 +109,7 @@ class ProjectEntity:
                 raise
 
     # READ: Retrieve a project by its name
-    def get_by_name(self, project_name: str):
+    def get_by_name(self, project_name: str, user_id: int):
         with session() as db:
             try:
                 project = (
@@ -119,7 +120,12 @@ class ProjectEntity:
 
                 if project is None:
                     raise LookupError("Project not found.")
-
+                
+                # Record the project view
+                ProjectViewEntity().create_view(
+                project_id=project.project_id,
+                user_id=user_id
+            )
                 return self._project_to_dict(project)
 
             except SQLAlchemyError:

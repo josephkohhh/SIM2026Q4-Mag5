@@ -10,11 +10,11 @@ save_favorite_control = SaveFavoriteControl()
 
 # Save favorite endpoint
 @router.post("/save_favorite")
-def save_favorite(favorite_data: dict):
+def save_favorite(user_id: int, project_id: int):
         
     try:
        # Call the controller method
-       return save_favorite_control.save_favorite(favorite_data)
+       return save_favorite_control.save_favorite(user_id, project_id)
     
     except LookupError as error:
         raise HTTPException(

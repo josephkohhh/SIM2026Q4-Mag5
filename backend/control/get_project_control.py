@@ -10,5 +10,5 @@ class GetProjectControl:
         self.project_entity = ProjectEntity()
 
     # Call the Entity method
-    def get_project(self, project_name: str):
-        return self.project_entity.get_by_name(project_name)
+    def get_project(self, project_name: str, user_id: int):
+        return self.project_entity.get_by_name(project_name, user_id)

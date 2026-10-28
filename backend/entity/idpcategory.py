@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 
 class IdpCategory(Base):
-    __tablename__ = "idp_category"
+    __tablename__ = "idpcategory"
 
     # Primary key: uniquely identifies each category
     category_id = Column(
