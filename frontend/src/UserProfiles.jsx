@@ -4,7 +4,7 @@ import "./UserProfiles.css";
 import "./adminportal.css";
 import logo from "./Image/logo.png";
 
-const API = "http://127.0.0.1:8000/user-profiles";
+const API = "http://127.0.0.1:8000/get_all_userprofile";
 
 export default function UserProfiles({ logout }) {
   const [profiles, setProfiles] = useState([]);
@@ -18,7 +18,7 @@ export default function UserProfiles({ logout }) {
   // Load profile types from FastAPI.
   async function loadProfiles() {
     try {
-      const response = await fetch(API);
+      const response = await fetch("http://127.0.0.1:8000/get_all_userprofile");
       if (!response.ok) throw new Error("Unable to load profiles");
       setProfiles(await response.json());
       setError("");
@@ -39,8 +39,8 @@ export default function UserProfiles({ logout }) {
   }
 
   function editProfile(profile) {
-    setEditId(profile.id);
-    setName(profile.name);
+    setEditId(profile.profile_id);
+    setName(profile.role);
     setDescription(profile.description);
     setShowForm(true);
   }
@@ -48,23 +48,28 @@ export default function UserProfiles({ logout }) {
   async function saveProfile(event) {
     event.preventDefault();
 
-    const existing = profiles.find((profile) => profile.id === editId);
+    const existing = profiles.find((profile) => profile.profile_id === editId);
 
     const data = {
-      name: name.trim(),
+      role: name.trim(),
       description: description.trim(),
-      suspended: existing ? existing.suspended : false,
     };
 
     try {
-      const response = await fetch(editId === null ? API : `${API}/${editId}`, {
-        method: editId === null ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
+      const response = await fetch(
+        editId === null
+          ? "http://127.0.0.1:8000/create_userprofile"
+          : `http://127.0.0.1:8000/update_userprofile?role=${encodeURIComponent(existing.role)}`,
+        {
+          method: editId === null ? "POST" : "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      );
       if (!response.ok) {
-        throw new Error("Unable to save profile");
+        const errorData = await response.json();
+        console.log("Backend error:", errorData);
+        throw new Error(JSON.stringify(errorData));
       }
 
       setShowForm(false);
@@ -77,17 +82,22 @@ export default function UserProfiles({ logout }) {
   // Delete Profile
   async function deleteProfile(profile) {
     const confirmDelete = window.confirm(
-      `Are you sure you want to delete ${profile.name}?`,
+      `Are you sure you want to delete ${profile.role}?`,
     );
 
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`${API}/${profile.id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://127.0.0.1:8000/delete_userprofile/${encodeURIComponent(profile.role)}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.log("Backend error:", errorData);
         throw new Error("Unable to delete profile");
       }
 
@@ -99,7 +109,7 @@ export default function UserProfiles({ logout }) {
   }
 
   const filteredProfiles = profiles.filter((profile) =>
-    profile.name.toLowerCase().includes(search.toLowerCase()),
+    (profile.role ?? "").toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -187,9 +197,8 @@ export default function UserProfiles({ logout }) {
 
                 <tbody>
                   {filteredProfiles.map((profile) => (
-                    <tr key={profile.id}>
-                      <td>{profile.name}</td>
-
+                    <tr key={profile.profile_id}>
+                      <td>{profile.role}</td>
                       <td>{profile.description}</td>
 
                       <td>

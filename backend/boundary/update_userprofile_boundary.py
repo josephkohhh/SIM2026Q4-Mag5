@@ -2,15 +2,17 @@
 
 from fastapi import APIRouter, HTTPException
 from control.update_userprofile_control import UpdateUserProfileControl
+from fastapi import Body
+
 
 router = APIRouter()
 
 # Initialise the controller object
 update_userprofile_control = UpdateUserProfileControl()
 
-# update user profile endpoint
+# update user profile endpoint  
 @router.patch("/update_userprofile")
-def update_userprofile(role: str,update_data: dict):
+def update_userprofile(role: str, update_data: dict = Body(...)):
 
     try:
         # Call the controller method
