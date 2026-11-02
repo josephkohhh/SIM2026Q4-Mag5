@@ -79,48 +79,46 @@ function AdminPortal({ logout }) {
 
   async function ChangeStatus(user) {
     if (changingStatus) return;
-
     const currentStatus = String(user.status ?? "ACTIVE").toUpperCase();
-
     const newStatus = currentStatus === "INACTIVE" ? "ACTIVE" : "INACTIVE";
 
     setChangingStatus(true);
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/suspend_useraccount/${encodeURIComponent(user.email)}`,
+        const response = await fetch(`http://localhost:8000/update_useraccount?email=${encodeURIComponent(user.email)}`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            status: newStatus,
-          }),
-        },
-      );
+          headers: { "Content-Type": "application/json",},
+          body: JSON.stringify({status: newStatus,}),});
+          const data = await response.json().catch(() => null);
 
-      const data = await response.json();
+        if (!response.ok) {
+            throw new Error(
+                typeof data?.detail === "string"
+                    ? data.detail
+                    : "Unable to update account status."
+            );
+          }
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Unable to update account status");
+        setUsers((previousUsers) =>
+            previousUsers.map((item) =>
+                item.user_id === user.user_id
+                    ? { ...item, status: newStatus }
+                    : item
+            )
+          );
+
+        alert(
+            newStatus === "ACTIVE"
+                ? "Account activated successfully."
+                : "Account suspended successfully."
+        );
+      } catch (err) {
+          alert(err.message);
+      } finally {
+          setChangingStatus(false);
       }
-
-      alert("Update status successful");
-    } catch (err) {
-      console.error("Change status error:", err);
-      alert(err.message || "Unable to update account status.");
-    } finally {
-      // Update the user list only after successful API response
-      setUsers((previousUsers) =>
-        previousUsers.map((item) =>
-          item.user_id === user.user_id ? { ...item, status: newStatus } : item,
-        ),
-      );
-      setChangingStatus(false);
-    }
   }
-
   return (
     <div className="AdminPortal_page">
       <aside className="AdminPortal_navbar">
