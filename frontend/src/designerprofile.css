@@ -1,0 +1,58 @@
+.DesignerProfile_page,
+.DesignerProfile_page * {
+    box-sizing: border-box;
+}
+
+.DesignerProfile_page {
+    align-items: flex-start;
+    padding: 24px;
+    color: #12332f;
+    color-scheme: light;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.DesignerProfile_form {
+    max-width: 480px;
+}
+
+.DesignerProfile_form h1 {
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.DesignerProfile_back {
+    align-self: flex-start;
+    margin-bottom: 24px;
+    color: #12332f;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.DesignerProfile_fields {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.DesignerProfile_fields:disabled {
+    opacity: 0.6;
+}
+
+.DesignerProfile_error {
+    margin: 16px 0 0;
+    color: #a12c2c;
+}
+
+.DesignerProfile_page :is(a, button, input, select):focus-visible {
+    outline: 2px solid #217562;
+    outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+    .DesignerProfile_page {
+        padding: 20px 16px;
+    }
+}
