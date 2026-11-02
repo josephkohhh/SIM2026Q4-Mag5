@@ -22,8 +22,8 @@ function UserForm({
   const [profiles, setProfiles] = useState([
     "ADMIN",
     "CUSTOMER",
-    "INTERIOR DESIGNER",
-    "PLATFORM MANAGEMENT",
+    "INTERIOR_DESIGNER",
+    "PLATFORM_MANAGEMENT",
   ]);
   const [current_password, setCurrent_password] = useState("");
 
@@ -88,25 +88,6 @@ function UserForm({
     onSubmit(formatData);
   }
 
-  useEffect(() => {
-    async function loadProfiles() {
-      try {
-        const response = await fetch("http://localhost:8000/user-profiles");
-
-        if (!response.ok) {
-          throw new Error("Failed to load profiles");
-        }
-
-        const data = await response.json();
-        setProfiles(data);
-      } catch (error) {
-        console.error("Error loading profiles:", error);
-      }
-    }
-
-    loadProfiles();
-  }, []);
-
   return (
     <form className="user_form" onSubmit={handleSubmit}>
       <div className="name_row">
@@ -136,7 +117,7 @@ function UserForm({
           />
         </div>
       </div>
-      {!isEdit && (
+      {(!isEdit || isSelfEdit) && (
         <>
           <label htmlFor="register_email">Email</label>
           <input
@@ -146,7 +127,7 @@ function UserForm({
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            readOnly={isView}
+            readOnly={isView || isSelfEdit}
           />
         </>
       )}
@@ -229,9 +210,9 @@ function UserForm({
               isEdit ||
               isView ||
               (isRegister
-                ? !["ADMIN", "PLATFORM MANAGEMENT"].includes(profile)
+                ? !["ADMIN", "PLATFORM_MANAGEMENT"].includes(profile)
                 : isAdmin ||
-                  ["CUSTOMER", "INTERIOR DESIGNER"].includes(profile)),
+                  ["CUSTOMER", "INTERIOR_DESIGNER"].includes(profile)),
           )
           .map((profile) => (
             <option key={profile} value={profile}>

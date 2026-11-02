@@ -16,15 +16,25 @@ function DesignerProfile({ onProfileUpdated }) {
 
         async function loadUser() {
             try {
-                const response = await fetch("http://localhost:8000/designer-profile", {
-                    credentials: "include",
-                    signal: controller.signal,
-                });
+                const email = localStorage.getItem("currentEmail");
+
+                if (!email) {
+                    throw new Error("Please log in again.");
+                }
+
+                const response = await fetch(
+                    `http://localhost:8000/get_useracount/${encodeURIComponent(email)}`,
+                    {
+                        credentials: "include",
+                        signal: controller.signal,
+                    }
+                );
+
                 const data = await response.json().catch(() => null);
                 if (!response.ok) {
                     throw new Error(typeof data?.detail === "string" ? data.detail : "Failed to load your profile. Please try again.");
                 }
-                if (!data || !Number.isInteger(data.id)) {
+                if (!data || !Number.isInteger(data.user_id)) {
                     throw new Error("Invalid profile response. Please try again.");
                 }
                 if (!controller.signal.aborted) {
@@ -50,12 +60,17 @@ function DesignerProfile({ onProfileUpdated }) {
         setSaving(true);
 
         try {
-            const response = await fetch("http://localhost:8000/designer-profile", {
-                method: "PUT",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
+            const response = await fetch(
+                `http://localhost:8000/update_useraccount?email=${encodeURIComponent(user.email)}`,
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                }
+            );
             const data = await response.json().catch(() => null);
             if (!response.ok) {
                 throw new Error(typeof data?.detail === "string" ? data.detail : "Unable to update your profile. Please try again.");

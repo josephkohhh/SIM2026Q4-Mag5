@@ -20,6 +20,6 @@ class GetUserAccountControl:
           "role": user_account.role,
           "name": user_account.name,
           "surname": user_account.surname,
-          "phone no": user_account.phone_no,
+          "phone_no": user_account.phone_no,
           "status": user_account.status,
         }

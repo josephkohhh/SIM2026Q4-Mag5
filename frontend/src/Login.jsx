@@ -46,11 +46,12 @@ function Login({ setisloggedin, setCurrentUser, setCurrentRole }) {
       localStorage.setItem("currentUserId", String(userId));
       localStorage.setItem("currentRole", userRole);
       localStorage.setItem("currentUser", fullName);
+      localStorage.setItem("currentEmail", email.trim());
 
       setCurrentUser(fullName);
       setCurrentRole(userRole);
       setisloggedin(true);
-      console.log(userRole);
+      console.log(email);
       const normalizedRole = userRole.replace(/\s+/g, "").toUpperCase();
 
       const destinations = {

@@ -10,9 +10,9 @@ get_useraccount_control = GetUserAccountControl()
 
 # get user account endpint
 @router.get("/get_useracount/{user_email}")
-def get_useraccount(email: str):
+def get_useraccount(user_email: str):
     try:
-        return get_useraccount_control.get_useraccount(email)
+        return get_useraccount_control.get_useraccount(user_email)
 
     except LookupError as error:
         raise HTTPException(
