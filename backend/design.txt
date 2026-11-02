@@ -1,5 +1,6 @@
 commands:
-source .venv/bin/activate 
+source .venv/bin/activate (macos) 
+venv\Scripts\activate (windows)
 uvicorn main:app --reload
 which python
 pip list
@@ -95,6 +96,7 @@ register
 
 login 
 {
+  admin01@example.com
   "email": "alice123@example.com",
   "password": "password"
 }
@@ -170,3 +172,7 @@ report format
   "registration_change": 10,
   "registration_change_percentage": null
 }
+
+
+
+pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic pydantic-core python-dotenv python-multipart email-validator PyJWT pwdlib[argon2] dnspython

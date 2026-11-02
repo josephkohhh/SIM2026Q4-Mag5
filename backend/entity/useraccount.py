@@ -69,6 +69,40 @@ class UserAccount(Base):
 # UserAccountEntity class responsible for database operations (CRUD)
 class UserAccountEntity:
 
+    # READ: Retrieve all user accounts
+    def get_all(self):
+        with session() as db:
+            try:
+                profiles = (
+                    db.query(
+                        UserAccount.user_id,
+                        UserAccount.email,
+                        UserAccount.name,
+                        UserAccount.surname,
+                        UserAccount.phone_no,
+                        UserAccount.role,
+                        UserAccount.status
+                    )
+                    .all()
+                )
+
+                return [
+                    {
+                        "user_id": profile.user_id,
+                        "email": profile.email,
+                        "name": profile.name,
+                        "surname": profile.surname,
+                        "phone_no": profile.phone_no,
+                        "role": profile.role.value,
+                        "status": profile.status.value
+                    }
+                    for profile in profiles
+                ]
+
+            except SQLAlchemyError:
+                db.rollback()
+                raise
+            
     # LOGIN: Authenticate a user account
     def login(self, login_data: dict):
 
@@ -96,13 +130,18 @@ class UserAccountEntity:
 
         # Generate access token after successful validation
         access_token = create_access_token(
+            user.name,
+            user.surname,
             user.user_id,
             user.role.value
         )
 
         return {
-            "message": f"Welcome {user.name}!",
-            "access_token": access_token
+            "access_token": access_token,
+            "user_id": user.user_id,
+            "name": user.name,
+            "surname": user.surname,
+            "role": user.role.value
         }
 
 
@@ -174,12 +213,7 @@ class UserAccountEntity:
                 db.commit()
                 db.refresh(user)
 
-                return {
-                    "message": (
-                        f"User account {user.email} "
-                        "has been created successfully."
-                    )
-                }
+                return True
 
             except IntegrityError as e:
                 db.rollback()

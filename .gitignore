@@ -19,3 +19,8 @@ dist/
 # Optional: Environment files
 # Add .env if you store sensitive config there
 .env
+
+
+# Node.js
+node_modules/
+npm-debug.log*

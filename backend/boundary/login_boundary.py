@@ -8,29 +8,32 @@ login_control = LoginControl()
 
 router = APIRouter()
 
-# login endpoint
+
 @router.post("/login")
 def login_user(login_data: dict, response: Response):
     try:
-        # Call the controller method
         result = login_control.login_user(login_data)
 
         token = result["access_token"]
 
-        # Set token in an HttpOnly cookie
         response.set_cookie(
             key="access_token",
             value=token,
             httponly=True,
-            secure=False, # True only in HTTPS
+            secure=False,
             samesite="lax",
             max_age=15 * 60,
             path="/",
         )
-
         return {
-            "message": result["message"]
+            "success": True,
+            "user_id": result["user_id"],
+            "name": result["name"],
+            "surname": result["surname"],
+            "role": result["role"]
         }
+
+
 
     except ValueError as error:
         raise HTTPException(
@@ -42,4 +45,7 @@ def login_user(login_data: dict, response: Response):
         raise HTTPException(
             status_code=500,
             detail=str(error)
-        ) from error        
+        ) from error
+
+
+

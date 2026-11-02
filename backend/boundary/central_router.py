@@ -9,6 +9,7 @@ from boundary.logout_boundary import router as logout_router
 from boundary.create_useraccount_boundary import router as create_useraccount_router
 from boundary.update_useraccount_boundary import router as update_useraccount_router
 from boundary.get_useraccount_boundary import router as get_useraccount_router
+from boundary.get_all_useraccount_boundary import router as get_all_useraccount_router
 from boundary.suspend_useraccount_boundary import router as suspend_useraccount_router
 
 from boundary.create_userprofile_boundary import router as create_userprofile_router
@@ -58,6 +59,7 @@ router.include_router(get_useraccount_router)
 router.include_router(create_useraccount_router)
 router.include_router(update_useraccount_router)
 router.include_router(suspend_useraccount_router)
+router.include_router(get_all_useraccount_router)
 
 # user profile
 router.include_router(get_userprofile_router)
