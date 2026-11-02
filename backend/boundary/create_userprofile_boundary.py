@@ -11,7 +11,7 @@ create_userprofile_control = CreateUserProfileControl()
 # Create user profile endpoint
 @router.post("/create_userprofile")
 def create_userprofile(profile_data: dict):
-
+    
     try:
         # Call the controller method
         return create_userprofile_control.create_userprofile(profile_data)
