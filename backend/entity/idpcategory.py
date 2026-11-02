@@ -115,7 +115,10 @@ class IdpCategoryEntity:
                     "message": (
                         f"Category {category.category_code} "
                         "created successfully."
-                    )
+                    ),
+                    "category_id": category.category_id,
+                    "category_code": category.category_code,
+                    "description": category.description,
                 }
 
             except IntegrityError as e:
@@ -179,7 +182,10 @@ class IdpCategoryEntity:
                     "message": (
                         f"Category {category.category_code} "
                         "updated successfully."
-                    )
+                    ),
+                    "category_id": category.category_id,
+                    "category_code": category.category_code,
+                    "description": category.description,
                 }
 
             except IntegrityError as e:

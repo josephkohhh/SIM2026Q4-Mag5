@@ -319,7 +319,7 @@ function App() {
             <ProtectedRoute
               isloggedin={isloggedin}
               currentRole={currentRole}
-              allowedRoles={["PlatformManagement"]}
+              allowedRoles={["PLATFORM_MANAGEMENT"]}
             >
               <Report logout={logout} />
             </ProtectedRoute>

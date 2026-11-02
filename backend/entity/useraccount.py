@@ -18,9 +18,9 @@ from utils.jsonwebtoken import create_access_token
 # Define Python Enums for PostgreSQL ENUM types
 class RoleEnum(str, Enum):
     CUSTOMER = "CUSTOMER"
-    INTERIOR_DESIGNER = "INTERIOR DESIGNER"
+    INTERIOR_DESIGNER = "INTERIOR_DESIGNER"
     ADMIN = "ADMIN"
-    PLATFORM_MANAGEMENT = "PLATFORM MANAGEMENT"
+    PLATFORM_MANAGEMENT = "PLATFORM_MANAGEMENT"
 
 
 class StatusEnum(str, Enum):

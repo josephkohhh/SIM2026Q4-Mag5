@@ -50,14 +50,14 @@ function Login({ setisloggedin, setCurrentUser, setCurrentRole }) {
       setCurrentUser(fullName);
       setCurrentRole(userRole);
       setisloggedin(true);
-
+      console.log(userRole);
       const normalizedRole = userRole.replace(/\s+/g, "").toUpperCase();
 
       const destinations = {
         ADMIN: "/admin_portal",
         CUSTOMER: "/",
-        INTERIORDESIGNER: "/designer_portal",
-        PLATFORMMANAGEMENT: "/management_portal",
+        INTERIOR_DESIGNER: "/designer_portal",
+        PLATFORM_MANAGEMENT : "/management_portal",
       };
 
       navigate(destinations[normalizedRole] || "/", { replace: true });

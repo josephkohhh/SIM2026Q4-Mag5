@@ -25,7 +25,7 @@ function PlatformManagementportal({logout}) {
 
     async function getCategories() {
         try {
-            const response = await fetch("http://localhost:8000/categories", {
+            const response = await fetch("http://localhost:8000/get_all_idpcategory", {
             signal: controller.signal,
             });
 
@@ -115,11 +115,11 @@ function PlatformManagementportal({logout}) {
 
         try {
             const url = creating
-                ? "http://localhost:8000/categories/create"
-                : `http://localhost:8000/categories/${selectedCategory.category_id}`;
+                ? "http://localhost:8000/create_idpcategory"
+                : `http://localhost:8000/update_idpcategory?category_code=${encodeURIComponent(selectedCategory.category_code)}`;
 
             const response = await fetch(url, {
-                method: creating ? "POST" : "PUT",
+                method: creating ? "POST" : "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -168,6 +168,7 @@ function PlatformManagementportal({logout}) {
             setSaving(false);
         }
     }
+
     async function deleteCategory(category) {
         if (deletingId !== null) return;
 
@@ -181,15 +182,9 @@ function PlatformManagementportal({logout}) {
 
         try {
             const response = await fetch(
-                "http://127.0.0.1:8000/categories/delete",
+                `http://localhost:8000/delete_category/${encodeURIComponent(category.category_code)}`,
                 {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        category_id: category.category_id
-                    })
+                    method: "DELETE",
                 }
             );
 

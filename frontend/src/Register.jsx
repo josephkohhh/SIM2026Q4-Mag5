@@ -40,7 +40,7 @@ function Register({ setisloggedin, setCurrentUser, setCurrentRole }) {
 
     const destinations = {
       CUSTOMER: "/",
-      INTERIORDESIGNER: "/designer_portal",
+      INTERIOR_DESIGNER: "/designer_portal",
     };
 
     navigate(destinations[normalizedRole] || "/", { replace: true });
