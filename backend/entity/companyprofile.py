@@ -85,7 +85,7 @@ class CompanyProfileEntity:
 
                 # Check if the profile exists
                 if company_profile is None:
-                    return {"message": "No Company profile."}
+                    return None
 
                 return company_profile
 

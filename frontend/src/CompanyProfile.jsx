@@ -82,12 +82,13 @@ function CompanyProfile({ readOnly = false }) {
 
                 const url = readOnly
                     ? `http://127.0.0.1:8000/projects/${projectId}/company-profile`
-                    : `http://127.0.0.1:8000/company-profiles/${user_id}`;
+                    : `http://127.0.0.1:8000/get_companyprofile/${user_id}`;
                 const response = await fetch(url, {
                     signal: controller.signal,
                     cache: "no-store",
                 });
                 const data = await response.json().catch(() => null);
+                console.log(data)
                 if (!response.ok) {
                     throw new Error(data?.detail || "Failed to load company profile. Please try again.");
                 }
@@ -129,26 +130,57 @@ function CompanyProfile({ readOnly = false }) {
 
     async function handleSubmit(event) {
         event.preventDefault();
+
         if (readOnly || loading || saving || error) return;
 
-        setSaving(true);
-        try {
-            const company = { company_name, phone_no, address, description };
-            if (hasProfile) company.status = status;
+        if (!Number.isInteger(user_id) || user_id <= 0) {
+            alert("Please log in again.");
+            return;
+        }
 
-            const response = await fetch(`http://127.0.0.1:8000/company-profiles/${user_id}`, {
-                method: hasProfile ? "PUT" : "POST",
-                headers: { "Content-Type": "application/json" },
+        setSaving(true);
+
+        try {
+            const company = {
+                company_name,
+                phone_no,
+                address,
+                description,
+            };
+
+            if (hasProfile) {
+                company.status = status;
+            } else {
+                company.user_id = user_id;
+            }
+
+            const url = hasProfile
+                ? `http://localhost:8000/update_companyprofile?user_id=${user_id}`
+                : "http://localhost:8000/create_companyprofile";
+
+            const response = await fetch(url, {
+                method: hasProfile ? "PATCH" : "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify(company),
             });
+
             const data = await response.json().catch(() => null);
 
             if (!response.ok) {
-                throw new Error(typeof data?.detail === "string" ? data.detail : "Unable to save company information. Please try again.");
+                throw new Error(
+                    typeof data?.detail === "string"
+                        ? data.detail
+                        : "Unable to save company information. Please try again."
+                );
             }
-            setStatus(data.status);
+
             setHasProfile(true);
-            alert("Company information saved successfully.");
+            setShowWelcome(false);
+
+            alert(data?.message || "Company information saved successfully.");
         } catch (err) {
             alert(err.message);
         } finally {

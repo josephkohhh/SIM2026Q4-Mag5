@@ -10,13 +10,21 @@ class GetCompanyProfileControl:
         self.companyprofile_entity = CompanyProfileEntity()
 
     # Call the Entity method
-    def get_companyprofile(self, category_code: str):
-        company_profile = self.companyprofile_entity.get_by_id(category_code)
+    def get_companyprofile(self, user_id: int):
+        company_profile = self.companyprofile_entity.get_by_id(user_id)
 
-        # Return specific fields ooly  
+        # If None return None
+        if company_profile is None:
+            return {"company_profile": None}
+
+        # Return specific fields only  
         return {
-          "company_name": company_profile.company_name,  
-          "description": company_profile.description,
-          "phone_no": company_profile.phone_no,
-          "address": company_profile.address,
+            "company_profile":{
+            "companyprofile_id" : company_profile.companyprofile_id, 
+            "company_name": company_profile.company_name,  
+            "description": company_profile.description,
+            "phone_no": company_profile.phone_no,
+            "address": company_profile.address,
+            "status" : company_profile.status
+          }
         }
