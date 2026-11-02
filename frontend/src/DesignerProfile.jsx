@@ -76,7 +76,13 @@ function DesignerProfile({ onProfileUpdated }) {
                 throw new Error(typeof data?.detail === "string" ? data.detail : "Unable to update your profile. Please try again.");
             }
 
-            onProfileUpdated(data);
+            onProfileUpdated({
+                ...user,
+                name: formData.name,
+                surname: formData.surname,
+                phone_no: formData.phone_no,
+                email: formData.email ?? user.email,
+            });
             alert("Your profile has been updated successfully.");
             navigate("/designer_portal");
         } catch (err) {

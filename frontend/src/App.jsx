@@ -39,7 +39,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(
     () => localStorage.getItem("currentUser") || "",
   );
-  const isDesigner = isloggedin && currentRole === "InteriorDesigner";
+  const isDesigner = isloggedin && currentRole === "INTERIOR_DESIGNER";
 
   function logout() {
     fetch("http://localhost:8000/logout", {
@@ -58,7 +58,7 @@ function App() {
   }
 
   function updateCurrentUser(user) {
-    const fullName = `${user.firstname ?? ""} ${user.lastname ?? ""}`.trim();
+    const fullName = `${user.name ?? ""} ${user.surname ?? ""}`.trim();
     localStorage.setItem("currentUser", fullName);
     localStorage.setItem("currentEmail", user.email);
     localStorage.setItem("currentRole", user.role);
@@ -124,7 +124,7 @@ function App() {
             <ProtectedRoute
               isloggedin={isloggedin}
               currentRole={currentRole}
-              allowedRoles={["Customer"]}
+              allowedRoles={["CUSTOMER"]}
             >
               <Favourite currentUser={currentUser} />
             </ProtectedRoute>
@@ -136,7 +136,7 @@ function App() {
             <ProtectedRoute
               isloggedin={isloggedin}
               currentRole={currentRole}
-              allowedRoles={["Customer"]}
+              allowedRoles={["CUSTOMER"]}
             >
               <Project currentUser={currentUser} />
             </ProtectedRoute>
@@ -148,7 +148,7 @@ function App() {
             <ProtectedRoute
               isloggedin={isloggedin}
               currentRole={currentRole}
-              allowedRoles={["Customer"]}
+              allowedRoles={["CUSTOMER"]}
             >
               <ProjectDetails currentUser={currentUser} />
             </ProtectedRoute>
@@ -161,7 +161,7 @@ function App() {
             <ProtectedRoute
               isloggedin={isloggedin}
               currentRole={currentRole}
-              allowedRoles={["Customer"]}
+              allowedRoles={["CUSTOMER"]}
             >
               <CustomerProfile onProfileUpdated={updateCurrentUser} />
             </ProtectedRoute>
@@ -174,7 +174,7 @@ function App() {
             <ProtectedRoute
               isloggedin={isloggedin}
               currentRole={currentRole}
-              allowedRoles={["Customer"]}
+              allowedRoles={["CUSTOMER"]}
             >
               <CompanyProfile readOnly={true} />
             </ProtectedRoute>
@@ -252,7 +252,7 @@ function App() {
             <ProtectedRoute
               isloggedin={isloggedin}
               currentRole={currentRole}
-              allowedRoles={["InteriorDesigner"]}
+              allowedRoles={["INTERIOR_DESIGNER"]}
             >
               <DesignerPortal logout={logout} />
             </ProtectedRoute>
