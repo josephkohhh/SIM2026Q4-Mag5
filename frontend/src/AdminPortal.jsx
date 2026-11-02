@@ -14,6 +14,7 @@ function AdminPortal({logout}) {
     const [selectedRole, setSelectedRole] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
     const [changingStatus, setChangingStatus] = useState(false);
+    const [profiles, setProfiles] = useState([]);
     
     useEffect(() => {
     const controller = new AbortController();
@@ -50,14 +51,28 @@ function AdminPortal({logout}) {
         return () => controller.abort();
     }, []);
 
+    useEffect(() => {
+      async function loadProfiles() {
+          try{
+              const response = await fetch("http://127.0.0.1:8000/user-profiles");
+              if (!response.ok) {throw new Error("Failed to load profiles");}
+              const data = await response.json();
+              setProfiles(data);
+          } catch (error) {
+              console.error(error);
+          }
+      }
+      loadProfiles();
+    }, []);
+    
     {/* Control number of user show in list */}
     const filteredUsers = users.filter((user) => {
         const keyword = search.trim().toLowerCase();
-        const username = String(user.username ?? "").toLowerCase();
+        const fullName = `${user.firstname ?? ""} ${user.lastname ?? ""}`.trim().toLowerCase();
         const email = String(user.email ?? "").toLowerCase();
         const status = String(user.status ?? "").toLowerCase();
 
-        const matchesSearch = username.includes(keyword) || email.includes(keyword);
+        const matchesSearch = fullName.includes(keyword) || email.includes(keyword);
         const matchesRole = selectedRole === "" || user.role === selectedRole;
         const matchesStatus = selectedStatus === "" || status === selectedStatus;
         return matchesSearch && matchesRole && matchesStatus;
@@ -80,7 +95,7 @@ function AdminPortal({logout}) {
         },
 
         body: JSON.stringify({
-            username: user.username,
+            email: user.email,
             status: newStatus,
             }),
         });
@@ -92,7 +107,7 @@ function AdminPortal({logout}) {
                 alert("Unable to update the account status. Please try again. If the problem persists, contact technical support.");
             }
         setUsers((previousUsers) => previousUsers.map((item) =>
-            item.username === user.username ? {...item,status:newStatus} :item));
+            item.id === user.id ? {...item,status:newStatus} :item));
         setChangingStatus(false);
         setSearch("");
         setSelectedRole("");
@@ -138,10 +153,14 @@ function AdminPortal({logout}) {
                         }}
                     >
                         <option value="">Role: All</option>
-                        <option value="UserAdmin">User Admin</option>
-                        <option value="Customer">Customer</option>
-                        <option value="InteriorDesigner">Interior Designer</option>
-                        <option value="PlatformManagement">Platform Management</option>
+                        {profiles.map((profile) => (
+                            <option
+                                key={profile.id}
+                                value={profile.name.replace(/\s+/g, "")}
+                            >
+                                {profile.name}
+                            </option>
+                        ))}
                     </select>
                     <select
                         aria-label="Filter_by_status"
@@ -182,7 +201,7 @@ function AdminPortal({logout}) {
                     ) : (currentUsers.map((user) => (
                         <tr key={user.id}>
                             <td>{user.id}</td>
-                            <td>{user.username}</td>
+                            <td>{`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim()}</td>
                             <td>{user.role}</td>
                             <td>{user.status ?? "Active"}</td>
                             <td>

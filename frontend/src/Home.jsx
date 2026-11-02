@@ -1,34 +1,72 @@
-import { useState } from "react";
+import { useEffect, useState } from 'react'
 import { Link, NavLink } from "react-router-dom";
 import "./home.css";
 import mainImage from "./Image/main_image.jpg";
 
 function Home({ isloggedin, currentUser }) {
+    const [projects, setProjects] = useState([])
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-  // Temporary sample data to show in cards
-  const projects = [
-    {
-      id: 1,
-      name: "Modern Living Room",
-      style: "Modern",
-      description: "A warm and contemporary living space.",
-      image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800"
-    },
-    {
-      id: 2,
-      name: "Minimalist Apartment",
-      style: "Minimalist",
-      description: "Simple design with elegant details.",
-      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800"
-    },
-    {
-      id: 3,
-      name: "Scandinavian Home",
-      style: "Scandinavian",
-      description: "Natural materials and bright interiors.",
-      image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800"
+  useEffect(() => {
+    const controller = new AbortController()
+    async function loadProjects() {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/projects`, {
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error('${response.status}')
+        }
+        const data = await response.json()
+        const items = Array.isArray(data)? data : data.projects ?? [];
+
+        // Fetch cover image for each project
+        const projectsWithImages = await Promise.all(
+          items.map(async (project) => {
+            const projectId = project.project_id ?? project.id;
+            if (projectId == null) {return { ...project, image: null };}
+
+            try {
+              const imageResponse = await fetch(
+                `http://127.0.0.1:8000/projects/${projectId}/images`,{
+                signal: controller.signal,
+              });
+
+              if (!imageResponse.ok) {
+                throw new Error(`HTTP ${imageResponse.status}`);
+              }
+              const imageData = await imageResponse.json();
+              console.log("Project ID:", projectId);
+              console.log("Images from Backend:", imageData.images);
+              const coverImage = (imageData.images ?? []).find((image) => image.is_cover === true);
+              console.log("Selected Cover Image:", coverImage);
+              return {...project,image: coverImage?.image_url ?? null};
+
+            } catch (error) {
+              if (error.name === "AbortError") {throw error;}
+              console.error(`Failed to load cover for project ${projectId}:`,error);
+              return {...project,image: null};
+            }
+          })
+        );
+        if (!controller.signal.aborted) {
+          setProjects(projectsWithImages);
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setError(error.message);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
     }
-  ];
+    loadProjects();
+    return () => controller.abort();
+  }, []);
 
   return (
     <main className="home-page">
@@ -55,8 +93,7 @@ function Home({ isloggedin, currentUser }) {
           />
         </div>
       </section>
-
-      {/* Projects Section */}
+      
       <section className="home-projects">
         <div className="home-section-heading">
           <div>
@@ -67,15 +104,12 @@ function Home({ isloggedin, currentUser }) {
         </div>
 
         <div className="home-project-grid">
-          {projects.map((project) => (
+          {projects.slice(0,3).map((project) => (
             <article className="home-project-card" key={project.id}>
               <div className="home-project-image">
-                <img src={project.image} alt={project.name} />
-                <span className="home-project-tag">
-                  {project.style}
-                </span>
+                {project.image ? (<img src={project.image}/>) : (<div className="project-placeholder">Interior Design Cover Picture</div>)}
+                {project.style && (<span className="project-tag">{project.style}</span>)}
               </div>
-
               <div className="home-project-info">
                 <h3>{project.name}</h3>
                 <p>{project.description}</p>
@@ -84,32 +118,29 @@ function Home({ isloggedin, currentUser }) {
           ))}
         </div>
         <div className="View_more_container">
-            <NavLink className="View_more" to="Project">View more</NavLink>
+            <NavLink className="View_more" to="/project">View more</NavLink>
         </div>
 
         {projects.length === 0 && (
           <p className="home-empty">
-            No projects found. Try another search or style.
+            No projects found.
           </p>
         )}
       </section>
 
-      {/* Call to Action */}
       <section className="home-cta">
         <span className="home-eyebrow">START YOUR JOURNEY</span>
-        <h2>Let's create something beautiful.</h2>
+        <h2>Let's create something beautiful</h2>
         <p>
           Explore ideas, save your favourites, and discover
-          the perfect design for your home.
+          the perferrence design for your home
         </p>
-
         {!isloggedin && (
           <Link to="/register" className="home-primary-button">
             Create an Account
           </Link>
         )}
       </section>
-
       <footer className="home-footer">
         <span>© 2026 FindID. All rights reserved.</span>
       </footer>

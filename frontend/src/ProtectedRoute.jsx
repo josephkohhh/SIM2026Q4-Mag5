@@ -11,7 +11,13 @@ function ProtectedRoute({
   }
 
   if (allowedRoles && !allowedRoles.includes(currentRole)) {
-    return <Navigate to="/" replace />;
+    const destinations = {
+      Customer: "/",
+      InteriorDesigner: "/designer_portal",
+      UserAdmin: "/admin_portal",
+      PlatformManagement: "/management_portal",
+    };
+    return <Navigate to={destinations[currentRole] || "/"} replace />;
   }
 
   return children;

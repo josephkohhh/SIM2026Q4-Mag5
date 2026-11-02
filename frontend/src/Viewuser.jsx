@@ -13,7 +13,7 @@ function Viewuser(){
     return (
         <section className="edituser_panel">
             <div className="edituser_form">
-                <h1>View {user.username}'s Account</h1>
+                <h1>View {user.lastname}'s Account</h1>
                 <UserForm initialData={user} isAdmin={true} isView={true}/>
             </div>
         </section>

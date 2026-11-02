@@ -80,38 +80,6 @@ export default function UserProfiles({ logout }) {
     }
   }
 
-  async function toggleSuspend(profile) {
-    const action = profile.suspended ? "activate" : "suspend";
-
-    if (
-      !window.confirm(
-        `Are you sure you want to ${action} ${profile.name}?`
-      )
-    ) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API}/${profile.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: profile.name,
-          description: profile.description,
-          suspended: !profile.suspended,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Unable to update status");
-      }
-
-      await loadProfiles();
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
 
   // Delete Profile
   async function deleteProfile(profile) {
@@ -267,7 +235,6 @@ export default function UserProfiles({ logout }) {
                   <tr>
                     <th>Profile Name</th>
                     <th>Description</th>
-                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -281,21 +248,6 @@ export default function UserProfiles({ logout }) {
                       <td>{profile.name}</td>
 
                       <td>{profile.description}</td>
-
-                      <td>
-                        <span className={profile.suspended ? "status-suspended" : "status-active"}>
-                          {profile.suspended ? "Suspended" : "Active"}
-                        </span>
-
-                        <button
-                          type="button"
-                          className={profile.suspended ? "profile-activate-btn" : "profile-suspend-btn"}
-                          onClick={() => toggleSuspend(profile)}
-                        >
-                          {profile.suspended ? "Activate" : "Suspend"}
-                        </button>
-                      </td>
-
 
                       <td>
                         <button

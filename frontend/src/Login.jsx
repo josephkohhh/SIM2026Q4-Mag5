@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './login.css';
 import logo from './Image/logo.png';
@@ -6,29 +6,31 @@ import introvideo from './Image/login_video.mp4';
 import { useNavigate} from 'react-router-dom';
 
 function Login({setisloggedin, setCurrentUser,setCurrentRole}){
-    const [username, setusername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setpassword] = useState("");
     const [role, setRole] = useState("-");
     const navigate = useNavigate();
+    const [profiles, setProfiles] = useState([]);
 
     async function login() {
-      if (!username.trim() || !password.trim()){
-        alert("Username and password cannot be empty");
+      if (!email.trim() || !password.trim()){
+        alert("email and password cannot be empty");
         return;
       }
       else if(role === "-"){
           alert("Please select role");
           return;
       }
-      const response = await fetch("http://127.0.0.1:8000/login", {
+      const response = await fetch("http://localhost:8000/login", {
         method: "POST",
+        credentials: "include",
 
         headers: {
           "Content-Type": "application/json",
         },
 
         body: JSON.stringify({
-          username: username,
+          email: email,
           password: password,
           role: role,
         }),
@@ -36,9 +38,13 @@ function Login({setisloggedin, setCurrentUser,setCurrentRole}){
 
       const data = await response.json();
       if (data.success) {
-        localStorage.setItem("currentUser", username);
+        {/* Need to change token*/}
+        const fullName = `${data.firstname ?? ""} ${data.lastname ?? ""}`.trim();
+        localStorage.setItem("currentEmail", email);
+        localStorage.setItem("currentUserId", String(data.user_id));
         localStorage.setItem("currentRole", data.role);
-        setCurrentUser(username);
+        localStorage.setItem("currentUser", fullName);
+        setCurrentUser(fullName);
         setCurrentRole(data.role);
         setisloggedin(true);
         const destinations = {
@@ -53,10 +59,24 @@ function Login({setisloggedin, setCurrentUser,setCurrentRole}){
       else {
         alert(data.message);
       }
-      setusername("");
+      setEmail("");
       setpassword("");
       setRole("-");
     }
+
+    useEffect(() => {
+        async function loadProfiles() {
+          try{
+              const response = await fetch("http://127.0.0.1:8000/user-profiles");
+              if (!response.ok) {throw new Error("Failed to load profiles");}
+                const data = await response.json();
+                setProfiles(data);
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+            loadProfiles();
+        }, []);
 
   return(
     <div className="login_page">
@@ -75,23 +95,19 @@ function Login({setisloggedin, setCurrentUser,setCurrentRole}){
         <section className="login_panel">
         <div className="login_form">
             <h1>Log in</h1>
-            <label htmlFor="username">Username</label>
-            <input id="username" placeholder="Enter username" value={username} onChange={(e) => setusername(e.target.value)}/>
+            <label htmlFor="username">Email</label>
+            <input id="username" type="email" placeholder="Enter email" value={email} onChange={(e) => setEmail(e.target.value)}/>
             <label htmlFor="password">Password</label>
             <input id="password" type="password" placeholder="Enter password" value={password} onChange={(e) => setpassword(e.target.value)} />
             <label htmlFor="roles">Role</label>
             <select id="roles" value={role} onChange={(e) => setRole(e.target.value)} >
                 <option value="-">Select role</option>
-                <option value="UserAdmin">User Admin</option>
-                <option value="Customer">Customer</option>
-                <option value="InteriorDesigner">Interior Designer</option>
-                <option value="PlatformManagement">Platform Management</option>
+                {profiles.map((profile) => (
+                  <option key={profile.id}value={profile.name.replace(/\s+/g, "")}>{profile.name}</option>
+                ))}
             </select>
             <button onClick={login}>Log in</button>
-
-            {["Customer", "InteriorDesigner", "PlatformManagement"].includes(role) && (
-              <Link to="/forgot-password">Forgot password?</Link>
-            )}
+            
             {["-","Customer", "InteriorDesigner"].includes(role) && (
               <Link to="/register">New customer? Create an account</Link>
             )}

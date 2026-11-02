@@ -1,9 +1,14 @@
 import { NavLink, useLocation,} from "react-router-dom";
 
-function Navbar({ isloggedin, currentUser, logout }) {
+function Navbar({ isloggedin, currentUser, currentRole, logout }) {
     const location = useLocation();
+    if (location.pathname === "/designer_portal" || location.pathname.startsWith("/designer_portal/")) {
+        return null;
+    }
     const hideNavbar = location.pathname.startsWith("/admin_portal/");
     const Admin_portal = location.pathname === "/admin_portal";
+    const PM_portal = location.pathname === "/management_portal";
+    const PM_report = location.pathname === "/management_portal/report";
 
     if (hideNavbar) {
         return(<nav className="UA_navbar">
@@ -26,6 +31,13 @@ function Navbar({ isloggedin, currentUser, logout }) {
         return (null);
     }
 
+    if(PM_portal){
+        return (null);
+    }
+    if (PM_report) {
+        return null;
+}
+
     return (
         <nav className="navbar">
         <div className="nav-links">
@@ -35,7 +47,11 @@ function Navbar({ isloggedin, currentUser, logout }) {
 
             {isloggedin ? (
             <div>
-                <span>👤 {currentUser}</span>
+                {currentRole === "Customer" ? (
+                    <NavLink to="/customer_profile" aria-label={`My profile: ${currentUser}`}>👤 {currentUser}</NavLink>
+                ) : (
+                    <span>👤 {currentUser}</span>
+                )}
                 <button onClick={logout}>Logout</button>
             </div>
             ) : (

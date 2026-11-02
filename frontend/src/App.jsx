@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import {BrowserRouter, NavLink, Routes, Route} from 'react-router-dom'
+import {BrowserRouter, NavLink, Navigate, Routes, Route} from 'react-router-dom'
+import ScrollTop from "./Component/ScrollTop";
 import Favourite from './Favourite'
 import Project from './Project';
 import Navbar from './Component/Navbar';
@@ -13,32 +14,61 @@ import EditUser from './EditUser';
 import Viewuser from './Viewuser';
 import './App.css';
 import UserProfiles from "./UserProfiles";
+import PlatformManagementportal from "./PlatformManagementportal";
+import Report from "./Reports";
+import ProjectDetails from "./Component/ProjectDetails";
+import CompanyProfile from "./CompanyProfile";
+import CustomerProfile from "./CustomerProfile";
+import DesignerPortal from "./DesignerPortal";
+import DesignerProfile from "./DesignerProfile";
+import MyIDPs from "./MyIDPs";
 
 function App() {
   const [currentRole, setCurrentRole] = useState(() => localStorage.getItem("currentRole") || "");
   const [isloggedin, setisloggedin] = useState(() => Boolean(localStorage.getItem("currentUser")));
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem("currentUser") || "");
+  const isDesigner = isloggedin && currentRole === "InteriorDesigner";
 
   function logout() {
+    fetch("http://localhost:8000/logout", { method: "POST", credentials: "include" })
+      .catch((error) => console.error("Unable to end the login session", error));
     localStorage.removeItem("currentUser");
     localStorage.removeItem("currentRole");
+    localStorage.removeItem("currentUserId");
+    localStorage.removeItem("currentEmail");
     setisloggedin(false);
     setCurrentUser("");
     setCurrentRole("");
   }
 
+  function updateCurrentUser(user) {
+    const fullName = `${user.firstname ?? ""} ${user.lastname ?? ""}`.trim();
+    localStorage.setItem("currentUser", fullName);
+    localStorage.setItem("currentEmail", user.email);
+    localStorage.setItem("currentRole", user.role);
+    setCurrentUser(fullName);
+    setCurrentRole(user.role);
+  }
+
   return (
     <BrowserRouter>
-      <Navbar isloggedin={isloggedin} currentUser={currentUser} logout={logout}/>
+      <ScrollTop />
+      <Navbar isloggedin={isloggedin} currentUser={currentUser} currentRole={currentRole} logout={logout}/>
       <Routes>
-        <Route path="/" element={<Home isloggedin={isloggedin} currentUser={currentUser}/>}/>
+        <Route path="/" element={isDesigner
+          ? <Navigate to="/designer_portal" replace />
+          : <Home isloggedin={isloggedin} currentUser={currentUser}/>}/>
 
-        <Route path="/login" element={<Login
+        <Route path="/login" element={isDesigner
+          ? <Navigate to="/designer_portal" replace />
+          : <Login
           setisloggedin={setisloggedin}
           setCurrentUser={setCurrentUser}
           setCurrentRole={setCurrentRole}/>}/>
 
-        <Route path="/register" element={<Register  
+        <Route path="/register" element={isDesigner
+          ? <Navigate to="/designer_portal" replace />
+          : <Register  
           setisloggedin={setisloggedin}
           setCurrentUser={setCurrentUser}
           setCurrentRole={setCurrentRole} />}/>
@@ -58,7 +88,30 @@ function App() {
               <Project currentUser={currentUser} />
             </ProtectedRoute>
         }/>
-        
+        <Route
+          path="/projects/:projectId"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["Customer"]}>
+              <ProjectDetails currentUser={currentUser} />
+            </ProtectedRoute>
+        }/>
+
+
+        <Route
+          path="/customer_profile"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["Customer"]}>
+              <CustomerProfile onProfileUpdated={updateCurrentUser} />
+            </ProtectedRoute>
+          }/>
+
+        <Route
+          path="/projects/:projectId/company-profile"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["Customer"]}>
+              <CompanyProfile readOnly={true} />
+            </ProtectedRoute>
+          }/>
 
         {/* UserAdmin Route */}
         <Route
@@ -100,18 +153,68 @@ function App() {
           }/>
 
         {/* InteriorDesigner Route */}
-        <Route>
+        <Route
+          path="/designer_portal"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["InteriorDesigner"]}>
+              <DesignerPortal logout={logout}/>
+            </ProtectedRoute>
+          }/>
+        <Route
+          path="/designer_portal/company_profile"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["InteriorDesigner"]}>
+              <CompanyProfile/>
+            </ProtectedRoute>
+          }/>
 
-        </Route>
+        <Route
+          path="/designer_portal/my_profile"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["InteriorDesigner"]}>
+              <DesignerProfile onProfileUpdated={updateCurrentUser} />
+            </ProtectedRoute>
+          }/>
+        
+        <Route
+            path="/designer_portal/my_idps"
+            element={
+                <ProtectedRoute
+                    isloggedin={isloggedin}
+                    currentRole={currentRole}
+                    allowedRoles={["InteriorDesigner"]}
+                >
+                    <MyIDPs logout={logout} />
+                </ProtectedRoute>
+            }
+        />
+
 
         {/* PlatformManagement Route */}
         <Route>
-
+        <Route
+          path="/management_portal"
+          element={
+            <ProtectedRoute isloggedin={isloggedin} currentRole={currentRole} allowedRoles={["PlatformManagement"]}>
+              <PlatformManagementportal logout={logout}/>
+            </ProtectedRoute>
+          }/>
         </Route>
-
+        {/* PlatformManagement report Route*/}
+        <Route
+          path="/management_portal/report"
+          element={
+            <ProtectedRoute
+              isloggedin={isloggedin}
+              currentRole={currentRole}
+              allowedRoles={["PlatformManagement"]}
+            >
+              <Report logout={logout} />
+            </ProtectedRoute>
+          }/>
       </Routes>
     </BrowserRouter>
   );
-}
+} 
 
 export default App;
