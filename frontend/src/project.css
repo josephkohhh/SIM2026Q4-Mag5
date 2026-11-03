@@ -9,6 +9,39 @@
   box-sizing: border-box;
 }
 
+.project-page .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 35px;
+}
+
+.project-page .pagination button {
+  min-width: 42px;
+  padding: 10px 16px;
+  border: 1px solid #ded8cf;
+  border-radius: 6px;
+  background: white;
+  color: #635d56;
+  font: inherit;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.project-page .pagination button:hover:not(:disabled),
+.project-page .pagination button.active {
+  background: #292824;
+  color: white;
+  border-color: #292824;
+}
+
+.project-page .pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* SEARCH SECTION */
 
 .project-search-section {

@@ -5,46 +5,78 @@ import { Link, useNavigate } from "react-router-dom";
 
 function Register({ setisloggedin, setCurrentUser, setCurrentRole }) {
   const navigate = useNavigate();
-  async function register(userdata) {
+async function register(userdata) {
+  let registered = false;
+
+  const requestOptions = {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  };
+
+  try {
     const response = await fetch("http://localhost:8000/register", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      ...requestOptions,
       body: JSON.stringify(userdata),
     });
 
-    const data = await response.json();
+    const result = await response.json().catch(() => null);
 
     if (!response.ok) {
-      alert(data.detail || "Login failed");
-      //   setnewusername("");
-      //   setnewpassword("");
-      return;
+      throw new Error(
+        typeof result?.detail === "string"
+          ? result.detail
+          : "Registration failed.");}
+
+    registered = true;
+    const loginResponse = await fetch("http://localhost:8000/login", {
+      ...requestOptions,
+      body: JSON.stringify({
+        email: userdata.email,
+        password: userdata.password,
+      }),
+    });
+
+    const data = await loginResponse.json().catch(() => null);
+
+    if (
+      !loginResponse.ok ||
+      !Number.isInteger(data?.user_id) ||
+      typeof data?.role !== "string"
+    ) {
+      throw new Error("Automatic login failed.");
     }
-    const userId = data.user_id;
-    const firstname = data.name;
-    const lastname = data.surname;
-    const userRole = data.role;
 
-    const fullName = `${firstname ?? ""} ${lastname ?? ""}`.trim();
+    const fullName = `${data.name ?? ""} ${data.surname ?? ""}`.trim();
+    const userRole = data.role.replace(/\s+/g, "").toUpperCase();
 
-    localStorage.setItem("currentUserId", String(userId));
+    localStorage.setItem("currentUserId", String(data.user_id));
     localStorage.setItem("currentRole", userRole);
     localStorage.setItem("currentUser", fullName);
+    localStorage.setItem("currentEmail", userdata.email.trim());
 
     setCurrentUser(fullName);
     setCurrentRole(userRole);
     setisloggedin(true);
-
-    const normalizedRole = userRole.replace(/\s+/g, "").toUpperCase();
 
     const destinations = {
       CUSTOMER: "/",
       INTERIOR_DESIGNER: "/designer_portal",
     };
 
-    navigate(destinations[normalizedRole] || "/", { replace: true });
+    navigate(destinations[userRole] || "/", { replace: true });
+  } catch (error) {
+    alert(
+      registered
+        ? "Registration succeeded, but automatic login failed. Please log in."
+        : error.message
+    );
+
+    if (registered) {
+      navigate("/login", { replace: true });
+    }
   }
+}
 
   return (
     <div className="register_page">

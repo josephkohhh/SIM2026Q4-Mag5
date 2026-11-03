@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import './project.css'
 
 function Project({ currentUser }) {
-  const currentEmail = localStorage.getItem("currentEmail");
   const navigate = useNavigate();
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
@@ -44,7 +43,7 @@ function Project({ currentUser }) {
   useEffect(() => {
     async function loadCategories() {
         try {
-          const response = await fetch(`http://127.0.0.1:8000/categories`);
+          const response = await fetch(`http://127.0.0.1:8000/get_all_idpcategory`);
           if (!response.ok) {throw new Error(`HTTP ${response.status}`);}
           const data = await response.json();
           const items = Array.isArray(data)? data : data.categories ?? [];
@@ -57,7 +56,7 @@ function Project({ currentUser }) {
     const controller = new AbortController()
     async function loadProjects() {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/projects`, {
+        const response = await fetch(`http://127.0.0.1:8000/get_all_project`, {
           signal: controller.signal,
         })
 
@@ -70,39 +69,46 @@ function Project({ currentUser }) {
         // Fetch cover image for each project
         const projectsWithImages = await Promise.all(
           items.map(async (project) => {
-            const projectId = project.project_id ?? project.id;
-            if (projectId == null) {return { ...project, image: null, company: null };}
-
-            const companyPromise = fetch(`http://127.0.0.1:8000/projects/${projectId}/company`, {
-              signal: controller.signal,
-              cache: "no-store",
-            }).then(async (response) => {
-              if (!response.ok) throw new Error(`HTTP ${response.status}`);
-              const companyData = await response.json();
-              return companyData.company?.status === "ACTIVE" ? companyData.company : null;
-            }).catch((error) => {
-              if (!controller.signal.aborted) console.error(`Failed to load company for project ${projectId}:`, error);
-              return undefined;
-            });
-
+            let company = null;
             try {
-              const imageResponse = await fetch(
-                `http://127.0.0.1:8000/projects/${projectId}/images`,{
-                signal: controller.signal,
-              });
+              const companyResponse = await fetch(
+                `http://127.0.0.1:8000/get_companyprofile/${project.user_id}`,
+                {
+                  signal: controller.signal,
+                  cache: "no-store",
+                }
+              );
 
-              if (!imageResponse.ok) {
-                throw new Error(`HTTP ${imageResponse.status}`);
+              if (!companyResponse.ok) {
+                throw new Error(`HTTP ${companyResponse.status}`);
               }
-              const imageData = await imageResponse.json();
-              const coverImage = (imageData.images ?? []).find((image) => image.is_cover === true);
-              return {...project,image: coverImage?.image_url ?? null,company: await companyPromise};
+
+              const companyData = await companyResponse.json();
+
+              company = companyData.company_profile?.status === "ACTIVE"
+                ? companyData.company_profile
+                : null;
 
             } catch (error) {
-              if (error.name === "AbortError") {throw error;}
-              console.error(`Failed to load cover for project ${projectId}:`,error);
-              return {...project,image: null,company: await companyPromise};
+              if (error.name === "AbortError") {
+                throw error;
+              }
+
+              console.error("Failed to load company:", error);
             }
+
+            return {
+              ...project,
+              id: project.project_id ?? project.id,
+              name: project.project_name ?? project.name,
+              style: project.category_code ?? project.style,
+              company,
+              image: project.project_image
+                ? `data:image/${
+                    project.project_image.startsWith("iVBOR") ? "png" : "jpeg"
+                  };base64,${project.project_image}`
+                : null,
+            };
           })
         );
         if (!controller.signal.aborted) {
@@ -125,38 +131,42 @@ function Project({ currentUser }) {
   }, []);
 
   async function addFavourite(projectId) {
-    if (!currentUser) {
-      alert('Please log in first')
-      return
+    const currentUserId = Number(localStorage.getItem("currentUserId"));
+
+    if (!currentUser || !Number.isInteger(currentUserId) || currentUserId <= 0) {
+      alert("Please log in first");
+      return;
     }
 
-    setSaving(true)
+    if (saving) return;
+    setSaving(true);
+
     try {
-      const response = await fetch(`http://127.0.0.1:8000/addTofavourites`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: currentUser,
-          project_id: projectId,
-          email: currentEmail
-        }),
-      })
+      const params = new URLSearchParams({
+        user_id: String(currentUserId),
+        project_id: String(projectId),
+      });
 
-      const data = await response.json()
+      const response = await fetch(
+        `http://127.0.0.1:8000/save_favorite?${params}`,
+        { method: "POST" }
+      );
 
-      if (!response.ok || !data.success) {
+      const data = await response.json();
+
+      if (!response.ok) {
         throw new Error(
-          data.message || data.detail || 'Failed to add favourite'
-        )
+          typeof data.detail === "string"
+            ? data.detail
+            : "Failed to add favourite."
+        );
       }
 
-      alert(data.message || 'Added to favourites!')
+      alert(data.message || "Added to favourites!");
     } catch (error) {
-      alert(error.message)
+      alert(error.message);
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
@@ -213,6 +223,7 @@ function Project({ currentUser }) {
                     <h3>{project.name}</h3>
                     <p>{project.description}</p>
                     <ProjectCompanyBox projectId={project.project_id ?? project.id}
+                      userId={project.user_id}
                       cardView={true} companySummary={project.company}
                       onCompanyUnavailable={markCompanyUnavailable} />
                     <div className="project-actions">

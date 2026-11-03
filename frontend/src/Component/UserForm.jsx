@@ -63,7 +63,7 @@ function UserForm({
     }
 
     const formatData = {
-      email: email.trim(),
+      email: email.toLowerCase().trim(),
       name: firstname.trim(),
       surname: lastname.trim(),
       phone_no: phonenum.trim(),

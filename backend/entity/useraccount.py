@@ -242,6 +242,14 @@ class UserAccountEntity:
                 if user is None:
                     raise LookupError("User account not found.")
 
+                current_password = updates.pop("current_password", None)
+                if "password" in updates and current_password is not None:
+                    if not isinstance(current_password, str) or not current_password:
+                        raise ValueError("Current password is required.")
+
+                    if not verify_password(current_password, user.password_hash):
+                        raise ValueError("Current password is incorrect.")
+                
                 # Apply the updates
                 for field, value in updates.items():
                     if field == "password":
@@ -250,7 +258,7 @@ class UserAccountEntity:
                                 "Password must be a non-empty string."
                             )
 
-                        user.password = hash_password(value)
+                        user.password_hash = hash_password(value)
                     else:
                         setattr(user, field, value)
 

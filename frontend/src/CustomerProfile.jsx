@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import "./customerprofile.css";
 
-const PROFILE_URL = "http://localhost:8000/customer-profile";
-
 function personalDetails(user) {
     return {
-        firstname: user.firstname ?? "",
-        lastname: user.lastname ?? "",
+        firstname: user.name ?? "",
+        lastname: user.surname ?? "",
         email: user.email ?? "",
-        phonenum: user.phonenum ?? "",
+        phonenum: user.phone_no ?? "",
     };
 }
 
@@ -29,32 +27,48 @@ function CustomerProfile({ onProfileUpdated }) {
     const [savingDetails, setSavingDetails] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
 
-    useEffect(() => {
-        const controller = new AbortController();
+useEffect(() => {
+  const controller = new AbortController();
 
-        async function loadProfile() {
-            try {
-                const response = await fetch(PROFILE_URL, {
-                    credentials: "include",
-                    signal: controller.signal,
-                });
-                const data = await readResponse(response);
-                if (!data || !Number.isInteger(data.id)) {
-                    throw new Error("Unable to load your profile. Please try again.");
-                }
-                if (!controller.signal.aborted) {
-                    setUser(data);
-                    setDetails(personalDetails(data));
-                }
-            } catch (error) {
-                if (!controller.signal.aborted) {setLoadError(error.message);}
-            } finally {
-                if (!controller.signal.aborted) {setLoading(false);}
-            }
+    async function loadProfile() {
+        setLoading(true);
+        setLoadError("");
+
+        try {
+        const currentEmail = localStorage.getItem("currentEmail");
+
+        if (!currentEmail) {
+            throw new Error("Please log in first.");
         }
 
-        loadProfile();
-        return () => controller.abort();
+        const response = await fetch(
+            `http://127.0.0.1:8000/get_useracount/${encodeURIComponent(currentEmail)}`,
+            {
+            method: "GET",
+            signal: controller.signal,
+            }
+        );
+
+        const data = await readResponse(response);
+        if (!data || !Number.isInteger(data.user_id)) {
+            throw new Error("Unable to load your profile.");
+        }
+        if (!controller.signal.aborted) {
+            setUser(data);
+            setDetails(personalDetails(data));
+        }
+        } catch (error) {
+        if (!controller.signal.aborted) {
+            setLoadError(error.message);
+        }
+        } finally {
+        if (!controller.signal.aborted) {
+            setLoading(false);
+        }
+        }
+    }
+    loadProfile();
+    return () => controller.abort();
     }, []);
 
     function changeDetail(event) {
@@ -67,28 +81,43 @@ function CustomerProfile({ onProfileUpdated }) {
         setPasswords((previous) => ({ ...previous, [name]: value }));
     }
 
+    async function patchAccount(email, updates) {
+        const params = new URLSearchParams({ email });
+
+        const response = await fetch(
+            `http://localhost:8000/update_useraccount?${params}`,
+            {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updates),
+            }
+        );
+
+        return readResponse(response);
+    }
+
     async function updatePersonalInformation(event) {
         event.preventDefault();
-        if (savingDetails) return;
-        const formData = details;
+
+        if (savingDetails || savingPassword || !user) return;
         setSavingDetails(true);
 
         try {
-            const response = await fetch(PROFILE_URL, {
-                method: "PUT",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-            const data = await readResponse(response);
-            if (!data || !Number.isInteger(data.id)) {
-                throw new Error("Unable to confirm your saved profile. Please reload the page.");
-            }
-            setUser(data);
-            setDetails(personalDetails(data));
-            onProfileUpdated(data);
-            alert("Your personal information has been updated.");
+            const updates = {
+            name: details.firstname.trim(),
+            surname: details.lastname.trim(),
+            email: details.email.trim(),
+            phone_no: details.phonenum.trim(),
+            };
 
+            const data = await patchAccount(user.email, updates);
+            const updatedUser = { ...user, ...updates };
+            setUser(updatedUser);
+            setDetails(personalDetails(updatedUser));
+            localStorage.setItem("currentEmail", updatedUser.email);
+            onProfileUpdated?.(updatedUser);
+
+            alert(data?.message || "Your personal information has been updated.");
         } catch (error) {
             alert(error.message);
         } finally {
@@ -98,22 +127,37 @@ function CustomerProfile({ onProfileUpdated }) {
 
     async function updatePassword(event) {
         event.preventDefault();
-        if (savingPassword) return;
+
+        if (!user || savingPassword || savingDetails) return;
+        if (!passwords.current_password || !passwords.new_password) {
+            alert("Please enter your current and new passwords.");
+            return;
+        }
         if (passwords.new_password !== passwords.confirm_password) {
             alert("The new passwords do not match.");
             return;
         }
         setSavingPassword(true);
-
         try {
-            const response = await fetch(`${PROFILE_URL}/password`, {
-                method: "PUT",
+            const response = await fetch(
+            `http://localhost:8000/update_useraccount?email=${encodeURIComponent(user.email)}`,
+            {
+                method: "PATCH",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(passwords),
-            });
+                body: JSON.stringify({
+                current_password: passwords.current_password,
+                password: passwords.new_password,
+                }),
+            }
+            );
             const data = await readResponse(response);
-            setPasswords({ current_password: "", new_password: "", confirm_password: "" });
+            setPasswords({
+            current_password: "",
+            new_password: "",
+            confirm_password: "",
+            });
+
             alert(data?.message || "Your password has been updated.");
         } catch (error) {
             alert(error.message);
@@ -155,6 +199,7 @@ function CustomerProfile({ onProfileUpdated }) {
                                     <label htmlFor="customer-email">Email</label>
                                     <input id="customer-email" name="email" type="email" autoComplete="email"
                                         placeholder="Email" required
+                                        readOnly
                                         value={details.email} onChange={changeDetail} />
                                     <label htmlFor="customer-phone">Phone</label>
                                     <input id="customer-phone" name="phonenum" type="tel" autoComplete="tel"

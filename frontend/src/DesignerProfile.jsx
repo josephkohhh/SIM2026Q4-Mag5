@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import UserForm from "./Component/UserForm";
 import "./edituser.css";
 import "./designerprofile.css";
@@ -95,7 +95,6 @@ function DesignerProfile({ onProfileUpdated }) {
     return (
         <main className="edituser_panel DesignerProfile_page">
             <div className="edituser_form DesignerProfile_form">
-                <Link to="/designer_portal" className="DesignerProfile_back">Back</Link>
                 <h1>My Profile</h1>
 
                 {loading && <p role="status">Loading your profile...</p>}

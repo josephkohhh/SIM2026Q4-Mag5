@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import ProjectCompanyBox from "./ProjectCompanyBox";
 import "./projectdetails.css";
 
-function ProjectDetails( {currentUser} ) {
+function ProjectDetails() {
   const { projectId } = useParams();
   const [project, setProject] = useState(null);
   const [images, setImages] = useState([]);
@@ -11,86 +11,124 @@ function ProjectDetails( {currentUser} ) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const currentEmail = localStorage.getItem("currentEmail");
   const [isFavourite, setIsFavourite] = useState(false);
   const [checkingFavourite, setCheckingFavourite] = useState(true);
   const [favouriteError, setFavouriteError] = useState("");
+  const viewerUserId = Number(localStorage.getItem("currentUserId"));
 
   useEffect(() => {
     const controller = new AbortController();
+
     async function loadProjectDetails() {
-        setLoading(true);
-        setError("");
-        setProject(null);
-        setImages([]);
-        setCurrentImageIndex(0);
+      setLoading(true);
+      setError("");
+      setProject(null);
+      setImages([]);
+      setCurrentImageIndex(0);
 
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/projects/${projectId}`, {
-                signal: controller.signal,
-            });
-            if (!response.ok) {throw new Error("Failed to load project details");}
-            const data = await response.json();
-
-            if (!controller.signal.aborted) {
-            setProject(data.project);
-            setImages(data.images ?? []);
-            }
-
-        } catch (error) {
-            if (error.name !== "AbortError") {
-            setError(error.message);
-            }
-        } finally {
-            if (!controller.signal.aborted) {
-            setLoading(false);
-            }
+      try {
+        if (!Number.isInteger(viewerUserId) || viewerUserId <= 0) {
+          throw new Error("Please log in first.");
         }
+        const listResponse = await fetch(
+          "http://127.0.0.1:8000/get_all_project",
+          { signal: controller.signal }
+        );
+
+        if (!listResponse.ok) {
+          throw new Error(`HTTP ${listResponse.status}`);
         }
-        loadProjectDetails();
-        return () => controller.abort();
-    }, [projectId]);
+
+        const listData = await listResponse.json();
+        const items = Array.isArray(listData)
+          ? listData
+          : listData.projects ?? [];
+
+        const selectedProject = items.find(
+          (item) => String(item.project_id) === String(projectId)
+        );
+
+        if (!selectedProject) {
+          throw new Error("Project not found.");
+        }
+        const response = await fetch(
+          `http://127.0.0.1:8000/get_project/${encodeURIComponent(selectedProject.project_name)}/${viewerUserId}`,
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (controller.signal.aborted) return;
+
+        setProject({
+          ...data,
+          id: data.project_id,
+          name: data.project_name,
+          style: data.category_code,
+        });
+
+        setImages(
+          data.project_image
+            ? [{
+                image_id: data.project_id,
+                image_url: data.project_image,
+              }]
+            : []
+        );
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setError(error.message);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadProjectDetails();
+
+    return () => controller.abort();
+  }, [projectId, viewerUserId]);
   
   useEffect(() => {
     const controller = new AbortController();
+
     async function checkFavourite() {
       setCheckingFavourite(true);
       setFavouriteError("");
       setIsFavourite(false);
 
-      if (!currentEmail) {
-        setCheckingFavourite(false);
-        return;
-      }
-
       try {
+        if (!Number.isInteger(viewerUserId) || viewerUserId <= 0) {
+          return;
+        }
+
         const response = await fetch(
-          "http://127.0.0.1:8000/favourite",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: currentEmail,
-            }),
-            signal: controller.signal,
-          }
+          `http://127.0.0.1:8000/get_all_favorite/${viewerUserId}`,
+          { signal: controller.signal }
         );
 
-        if (!response.ok) {throw new Error("Failed to check favourite");}
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
         const data = await response.json();
-        const favourites = Array.isArray(data)? data: data.favourites ?? [];
-        const found = favourites.some((item) => {
-        const id = Array.isArray(item)? item[0]: item.project_id ?? item.id;
-        return String(id) === String(projectId);});
+        const favourites = Array.isArray(data) ? data : [];
+
+        const found = favourites.some(
+          (item) => String(item.project_id) === String(projectId)
+        );
 
         if (!controller.signal.aborted) {
           setIsFavourite(found);
         }
-
       } catch (error) {
-        if (error.name !== "AbortError") {
+        if (!controller.signal.aborted) {
           setFavouriteError(error.message);
         }
       } finally {
@@ -101,9 +139,9 @@ function ProjectDetails( {currentUser} ) {
     }
 
     checkFavourite();
-    return () => controller.abort();
 
-  }, [projectId, currentEmail]);
+    return () => controller.abort();
+  }, [projectId, viewerUserId]);
 
   function previousImage() {
     setCurrentImageIndex((previous) =>
@@ -121,49 +159,75 @@ function ProjectDetails( {currentUser} ) {
   }
 
   async function toggleFavourite() {
-    if (!currentEmail) {
+    if (!Number.isInteger(viewerUserId) || viewerUserId <= 0) {
       alert("Please log in first");
       return;
     }
 
-    if (saving || checkingFavourite || favouriteError) {
+    if (saving || checkingFavourite || favouriteError) return;
+
+    if (
+      isFavourite &&
+      !window.confirm("Remove this project from your favourites?")
+    ) {
       return;
     }
 
-    // Confirm before removing
-    if (isFavourite) {
-      const confirmed = window.confirm("Are you sure you want to remove this project from your favourites?");
-      if (!confirmed) {return;}
-    }
-
     setSaving(true);
+
     try {
-      const url = isFavourite
-        ? "http://127.0.0.1:8000/favourite/remove"
-        : "http://127.0.0.1:8000/addTofavourites";
+      let response;
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: currentUser,
-          email: currentEmail,
-          project_id: Number(projectId),
-        }),
-      });
+      if (isFavourite) {
+        const listResponse = await fetch(
+          `http://127.0.0.1:8000/get_all_favorite/${viewerUserId}`,
+          { cache: "no-store" }
+        );
 
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || data.success === false) {
-        throw new Error(
-          data.message ||
-          (typeof data.detail === "string"
-            ? data.detail
-            : `Failed to update favourite: ${response.status}`)
+        if (!listResponse.ok) {
+          throw new Error(`HTTP ${listResponse.status}`);
+        }
+
+        const listData = await listResponse.json();
+        const favourites = Array.isArray(listData) ? listData : [];
+
+        const favourite = favourites.find(
+          (item) => String(item.project_id) === String(projectId)
+        );
+
+        if (!favourite) {
+          setIsFavourite(false);
+          return;
+        }
+
+        response = await fetch(
+          `http://127.0.0.1:8000/delete_favorite/${favourite.favourite_id}`,
+          { method: "DELETE" }
+        );
+      } else {
+        const params = new URLSearchParams({
+          user_id: String(viewerUserId),
+          project_id: String(projectId),
+        });
+
+        response = await fetch(
+          `http://127.0.0.1:8000/save_favorite?${params}`,
+          { method: "POST" }
         );
       }
-      setIsFavourite((prev) => !prev);
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.detail === "string"
+            ? data.detail
+            : `HTTP ${response.status}`
+        );
+      }
+
+      setIsFavourite(!isFavourite);
+      alert(data.message || "Favourites updated.");
     } catch (error) {
       alert(error.message);
     } finally {
@@ -241,7 +305,11 @@ function ProjectDetails( {currentUser} ) {
                 disabled={saving || checkingFavourite || !!favouriteError}
                 onClick={toggleFavourite}
             >{isFavourite ? "Unfavourite" : "Favourite"}</button>
-            <ProjectCompanyBox key={projectId} projectId={projectId} />
+            <ProjectCompanyBox
+              key={project.project_id}
+              projectId={project.project_id}
+              userId={project.user_id}
+            />
           </section>
         </>
       )}

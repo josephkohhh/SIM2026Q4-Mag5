@@ -15,13 +15,14 @@ function Favourite({ currentUser }){
   const styles = ["All", ...categories.map((category) => category.category_code)];
   const [currentPage, setCurrentPage] = useState(1);
   const projectPerPage = 9;
+  const viewerUserId = Number(localStorage.getItem("currentUserId"));
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadCategories() {
       try {
-        const response = await fetch("http://127.0.0.1:8000/categories", {
+        const response = await fetch("http://127.0.0.1:8000/get_all_idpcategory", {
           signal: controller.signal,
         });
         if (!response.ok) {throw new Error(`HTTP ${response.status}`);}
@@ -50,14 +51,8 @@ function Favourite({ currentUser }){
       setError('')
       setLoading(true)
       try {
-        const response = await fetch(`http://127.0.0.1:8000/favourite`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: currentEmail,
-          }),
+        const response = await fetch(`http://127.0.0.1:8000/get_all_favorite/${viewerUserId}`, {
+          method: 'GET',
           signal: controller.signal,
         })
 
@@ -65,46 +60,69 @@ function Favourite({ currentUser }){
           throw new Error(`Failed to read favourite: ${response.status}`)
         }
 
-        const data = await response.json()
-        const formattedData = data.map((project) => ({
-          id: project[0],
-          name: project[1],
-          description: project[2],
-          style: project[3],
-        }));
+        const data = await response.json();
+        const favourites = Array.isArray(data) ? data : [];
+        const projectsResponse = await fetch(
+          "http://127.0.0.1:8000/get_all_project",
+          { signal: controller.signal }
+        );
 
+        if (!projectsResponse.ok) {
+          throw new Error(`HTTP ${projectsResponse.status}`);
+        }
+
+        const projectsData = await projectsResponse.json();
+        const projects = Array.isArray(projectsData)
+          ? projectsData
+          : projectsData.projects ?? [];
+
+        const projectMap = new Map(
+          projects.map((project) => [String(project.project_id), project])
+        );
+        const formattedData = favourites
+          .map((favourite) => {
+            const project = projectMap.get(String(favourite.project_id));
+
+            return project
+              ? {
+                  ...project,
+                  favourite_id: favourite.favourite_id,
+                }
+              : null;
+          })
+          .filter(Boolean);
         const projectsWithImages = await Promise.all(
           formattedData.map(async (project) => {
-            const projectId = project.id;
-            if (projectId == null) {return { ...project, image: null, company: null };}
-
-            const companyPromise = fetch(`http://127.0.0.1:8000/projects/${projectId}/company`, {
-              signal: controller.signal,
-              cache: "no-store",
-            }).then(async (response) => {
-              if (!response.ok) {throw new Error(`HTTP ${response.status}`);}
-              const companyData = await response.json();
-              return companyData.company?.status === "ACTIVE" ? companyData.company : null;
-            }).catch((error) => {
-              if (!controller.signal.aborted) {
-                console.error(`Failed to load company for project ${projectId}:`, error);
-              }
-              return null;
-            });
-
+            let company = null;
             try {
-              const imageResponse = await fetch(`http://127.0.0.1:8000/projects/${projectId}/images`, {
-                signal: controller.signal,
-              });
-              if (!imageResponse.ok) {throw new Error(`HTTP ${imageResponse.status}`);}
-              const imageData = await imageResponse.json();
-              const coverImage = (imageData.images ?? []).find((image) => image.is_cover === true);
-              return { ...project, image: coverImage?.image_url ?? null, company: await companyPromise };
+              const companyResponse = await fetch(
+                `http://127.0.0.1:8000/get_companyprofile/${project.user_id}`,
+                { signal: controller.signal }
+              );
+              if (!companyResponse.ok) {
+                throw new Error(`HTTP ${companyResponse.status}`);
+              }
+              const companyData = await companyResponse.json();
+
+              company = companyData.company_profile?.status === "ACTIVE"
+                ? companyData.company_profile
+                : null;
             } catch (error) {
-              if (error.name === "AbortError") {throw error;}
-              console.error(`Failed to load cover for project ${projectId}:`, error);
-              return { ...project, image: null, company: await companyPromise };
+              if (error.name === "AbortError") throw error;
+              console.error("Failed to load company:", error);
             }
+            return {
+              ...project,
+              id: project.project_id,
+              name: project.project_name,
+              style: project.category_code,
+              company,
+              image: project.project_image
+                ? `data:image/${
+                    project.project_image.startsWith("iVBOR") ? "png" : "jpeg"
+                  };base64,${project.project_image}`
+                : null,
+            };
           })
         );
 
@@ -125,7 +143,7 @@ function Favourite({ currentUser }){
 
     get_favourite()
     return () => controller.abort()
-    }, [currentEmail, currentUser])
+    }, [viewerUserId, currentUser]);
 
     if (!currentUser) {
     return <p>Please log in to view your favourites.</p>
@@ -156,29 +174,40 @@ function Favourite({ currentUser }){
     navigate(`/projects/${projectId}`);
   }
 
-  async function remove_project(projectId){
+  async function remove_project(projectId) {
     const confirmed = window.confirm(
-      "Are you sure you want to remove this project from your favourites?");
-      if (!confirmed) {return;}
+      "Are you sure you want to remove this project from your favourites?"
+    );
 
-    try{
-      const response = await fetch(`http://127.0.0.1:8000/favourite/remove`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-          email: currentEmail,
-          project_id: projectId,
-        }),
-      })
-        if (!response.ok) {throw new Error(`Failed to remove favourite: ${response.status}`);}
-        setFavourite_list((prev) =>prev.filter((project) => project.id !== projectId));
-        const remainingCount = filteredProjects.length - 1;
-        setCurrentPage((prev) => Math.min( prev, Math.max(1, Math.ceil(remainingCount / projectPerPage))));
-      } catch (error) {
-        alert(error.message);
+    if (!confirmed) return;
+
+    try {
+      const favourite = favourite_list.find(
+        (project) => String(project.id) === String(projectId)
+      );
+      if (!favourite) {
+        throw new Error("Favourite record not found.");
       }
+      const response = await fetch(
+        `http://127.0.0.1:8000/delete_favorite/${favourite.favourite_id}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to remove favourite: ${response.status}`);
+      }
+      setFavourite_list((prev) =>
+        prev.filter((project) => String(project.id) !== String(projectId))
+      );
+      const remainingCount = Math.max(0, filteredProjects.length - 1);
+      setCurrentPage((prev) =>
+        Math.min(
+          prev,
+          Math.max(1, Math.ceil(remainingCount / projectPerPage))
+        )
+      );
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   return (
@@ -249,5 +278,4 @@ function Favourite({ currentUser }){
       </section>
     </div>
 )}
-
 export default Favourite;

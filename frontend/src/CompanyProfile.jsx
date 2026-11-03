@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
 import "./companyprofile.css";
 
 function CompanyProfile({ readOnly = false }) {
     const { projectId } = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
     const customerBackPath = location.state?.from === "/project" ? "/project" : `/projects/${projectId}`;
     const [company_name, setCompany_name] = useState("");
     const [phone_no,setPhone_no] = useState("");
@@ -24,6 +25,7 @@ function CompanyProfile({ readOnly = false }) {
     const projectsPerPage = 3;
     const totalPages = Math.ceil(companyProjects.length / projectsPerPage);
     const paginatedProjects = companyProjects.slice((currentPage - 1) * projectsPerPage, currentPage * projectsPerPage);
+    const ownerUserId = new URLSearchParams(location.search).get("user_id");
 
     useEffect(() => {
         if (!showWelcome) return;
@@ -33,31 +35,52 @@ function CompanyProfile({ readOnly = false }) {
 
     useEffect(() => {
         const controller = new AbortController();
+        async function loadCompanyProjects(companyprofileId) {
+        setProjectsLoading(true);
+        setProjectsError("");
 
-        async function loadCompanyProjects(projects) {
-            setProjectsLoading(true);
-            setProjectsError("");
             try {
-                const projectsWithImages = await Promise.all(projects.map(async (project) => {
-                    try {
-                        const response = await fetch(`http://127.0.0.1:8000/projects/${project.id}/images`, {
-                            signal: controller.signal,
-                        });
-                        if (!response.ok) {throw new Error(`HTTP ${response.status}`);}
-                        const data = await response.json();
-                        const cover = (data.images ?? []).find((image) => image.is_cover === true);
-                        return { ...project, image: cover?.image_url ?? null };
-                    } catch (error) {
-                        if (controller.signal.aborted) {throw error;}
-                        console.error(`Failed to load cover for project ${project.id}:`, error);
-                        return { ...project, image: null };
-                    }
+                const response = await fetch(
+                "http://127.0.0.1:8000/get_all_project",
+                { signal: controller.signal }
+                );
+
+                if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const items = Array.isArray(data) ? data : data.projects ?? [];
+
+                const projectsWithImages = items
+                .filter(
+                    (project) =>
+                    Number(project.companyprofile_id) === Number(companyprofileId)
+                )
+                .map((project) => ({
+                    ...project,
+                    id: project.project_id ?? project.id,
+                    name: project.project_name ?? project.name,
+                    style: project.category_code ?? project.style,
+                    image: project.project_image
+                    ? `data:image/${
+                        project.project_image.startsWith("iVBOR") ? "png" : "jpeg"
+                        };base64,${project.project_image}`
+                    : null,
                 }));
-                if (!controller.signal.aborted) {setCompanyProjects(projectsWithImages);}
+
+                if (!controller.signal.aborted) {
+                setCompanyProjects(projectsWithImages);
+                setCurrentPage(1);
+                }
             } catch (error) {
-                if (!controller.signal.aborted) {setProjectsError(error.message);}
+                if (!controller.signal.aborted) {
+                setProjectsError(error.message);
+                }
             } finally {
-                if (!controller.signal.aborted) {setProjectsLoading(false);}
+                if (!controller.signal.aborted) {
+                setProjectsLoading(false);
+                }
             }
         }
 
@@ -80,9 +103,10 @@ function CompanyProfile({ readOnly = false }) {
                     throw new Error("Please log in again to load your company profile.");
                 }
 
-                const url = readOnly
-                    ? `http://127.0.0.1:8000/projects/${projectId}/company-profile`
-                    : `http://127.0.0.1:8000/get_companyprofile/${user_id}`;
+                const profileUserId = readOnly ? ownerUserId : user_id;
+                if (!profileUserId) {throw new Error("Missing company owner user ID.");}
+                const url =
+                `http://127.0.0.1:8000/get_companyprofile/${profileUserId}`;
                 const response = await fetch(url, {
                     signal: controller.signal,
                     cache: "no-store",
@@ -111,7 +135,7 @@ function CompanyProfile({ readOnly = false }) {
                     setDescription(profile.description ?? "");
                     setStatus(profile.status ?? "ACTIVE");
                     setHasProfile(true);
-                    if (readOnly) {loadCompanyProjects(data.projects ?? []);}
+                    if (readOnly) {await loadCompanyProjects(profile.companyprofile_id);}
                 }
             } catch (err) {
                 if (!controller.signal.aborted) {
@@ -126,7 +150,7 @@ function CompanyProfile({ readOnly = false }) {
 
         loadCompanyProfile();
         return () => controller.abort();
-    }, [user_id, readOnly, projectId]);
+    }, [user_id, readOnly, projectId, ownerUserId]);
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -191,9 +215,11 @@ function CompanyProfile({ readOnly = false }) {
     return (
         <div className={readOnly ? "CompanyProfile_page CompanyProfile_page--customer" : "CompanyProfile_page"}>
             <main className="CompanyProfile_content">
-                <Link to={readOnly ? customerBackPath : "/designer_portal"} className="CompanyProfile_back">Back</Link>
+                {readOnly && (
+                    <Link to={customerBackPath} className="CompanyProfile_back">Back</Link>
+                )}
                 <header className="CompanyProfile_header">
-                    <h1>Company Profile</h1>
+                    <h1 className="CompanyProfile_title">Company Profile</h1>
                 </header>
 
                 {!readOnly && showWelcome && (
@@ -270,6 +296,14 @@ function CompanyProfile({ readOnly = false }) {
                                                 <h3><Link to={`/projects/${project.id}`}>{project.name}</Link></h3>
                                                 {project.style && <span className="CompanyProfile_projectStyle">{project.style}</span>}
                                                 <p>{project.description}</p>
+                                            </div>
+                                            <div className="CompanyProfile_projectActions">
+                                                <button
+                                                type="button"
+                                                onClick={() => navigate(`/projects/${project.id}`)}
+                                                >
+                                                View Project
+                                                </button>
                                             </div>
                                         </article>
                                     ))}

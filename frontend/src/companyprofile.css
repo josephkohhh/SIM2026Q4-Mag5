@@ -75,6 +75,40 @@
     color: #ded6ca;
 }
 
+.CompanyProfile_header .CompanyProfile_title {
+  width: 100%;
+  text-align: center;
+}
+
+.CompanyProfile_projectActions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0;
+  padding: 0 16px 20px;
+}
+
+.CompanyProfile_projectActions button {
+  padding: 11px 20px;
+  background: #292824;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.CompanyProfile_projectActions button:hover:not(:disabled) {
+  background: #a28262;
+}
+
+.CompanyProfile_projectActions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .CompanyProfile_content {
     flex: 1;
     min-width: 0;

@@ -2,19 +2,48 @@ import { NavLink, useLocation,} from "react-router-dom";
 
 function Navbar({ isloggedin, currentUser, currentRole, logout }) {
     const location = useLocation();
-    if (location.pathname === "/designer_portal" || location.pathname.startsWith("/designer_portal/")) {
-        return null;
+    const pathname = location.pathname;
+
+    const isDesignerProfilePage = [
+    "/designer_portal/company_profile",
+    "/designer_portal/my_profile",
+    ].includes(pathname);
+
+    const isDesignerArea =
+    pathname === "/designer_portal" ||
+    pathname.startsWith("/designer_portal/");
+
+    if (isDesignerArea && !isDesignerProfilePage) {
+    return null;
     }
-    const hideNavbar = location.pathname.startsWith("/admin_portal/");
-    const Admin_portal = location.pathname === "/admin_portal";
-    const PM_portal = location.pathname === "/management_portal";
-    const PM_report = location.pathname === "/management_portal/report";
+
+    const hideNavbar =
+    pathname.startsWith("/admin_portal/") ||
+    isDesignerProfilePage;
+
+    const backTo = isDesignerProfilePage
+    ? "/designer_portal"
+    : "/admin_portal";
+
+    const showBack =
+    isDesignerProfilePage ||
+    [
+        "/admin_portal/createuser",
+        "/admin_portal/edituser",
+        "/admin_portal/viewuser",
+    ].includes(pathname);
+
+    const Admin_portal = pathname === "/admin_portal";
+    const PM_portal = pathname === "/management_portal";
+    const PM_report = pathname === "/management_portal/report";
 
     if (hideNavbar) {
         return(<nav className="UA_navbar">
         <div className="UA_nav-links">
-            {(location.pathname === "/admin_portal/createuser" || location.pathname === "/admin_portal/edituser" || location.pathname === "/admin_portal/viewuser") && (
-                <NavLink className="Back" to="/admin_portal" end>Back</NavLink>
+            {showBack && (
+            <NavLink className="Back" to={backTo} end>
+                Back
+            </NavLink>
             )}
             {isloggedin ? (
             <div>
@@ -47,7 +76,7 @@ function Navbar({ isloggedin, currentUser, currentRole, logout }) {
 
             {isloggedin ? (
             <div>
-                {currentRole === "Customer" ? (
+                {currentRole === "CUSTOMER" ? (
                     <NavLink to="/customer_profile" aria-label={`My profile: ${currentUser}`}>👤 {currentUser}</NavLink>
                 ) : (
                     <span>👤 {currentUser}</span>

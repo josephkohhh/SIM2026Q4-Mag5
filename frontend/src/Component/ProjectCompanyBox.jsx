@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./projectcompanybox.css";
 
-function ProjectCompanyBox({ projectId, cardView = false, companySummary, onCompanyUnavailable }) {
+function ProjectCompanyBox({ projectId, userId, cardView = false, companySummary, onCompanyUnavailable }) {
     const [loadedCompany, setLoadedCompany] = useState(null);
     const [companyLoading, setCompanyLoading] = useState(true);
     const [knownInactive, setKnownInactive] = useState(false);
@@ -22,15 +22,15 @@ function ProjectCompanyBox({ projectId, cardView = false, companySummary, onComp
             setLoadedCompany(null);
             setError("");
             try {
-                const response = await fetch(`http://127.0.0.1:8000/projects/${projectId}/company`, {
-                    signal: controller.signal,
-                });
-
+                const response = await fetch(
+                `http://127.0.0.1:8000/get_companyprofile/${userId}`,
+                { signal: controller.signal }
+                );
                 const data = await response.json().catch(() => null);
                 if (!response.ok) {
                     throw new Error(typeof data?.detail === "string" ? data.detail : "Unable to load company information.");
                 }
-                if (!controller.signal.aborted) setLoadedCompany(data?.company ?? null);
+                if (!controller.signal.aborted){setLoadedCompany(data?.company_profile ?? null);}
 
             } catch (err) {
                 if (!controller.signal.aborted) setError(err.message);
@@ -41,35 +41,41 @@ function ProjectCompanyBox({ projectId, cardView = false, companySummary, onComp
 
         loadCompany();
         return () => controller.abort();
-    }, [projectId, companySummary]);
+    }, [projectId,userId, companySummary]);
 
     async function viewCompanyProfile() {
-        if (!company || checking) return;
+        if (!company || checking || userId == null) return;
+
         setChecking(true);
+
         try {
-            const response = await fetch(`http://127.0.0.1:8000/projects/${projectId}/company-profile`, {
-                cache: "no-store",
-            });
+            const response = await fetch(
+            `http://127.0.0.1:8000/get_companyprofile/${userId}`,
+            { cache: "no-store" }
+            );
+
             const data = await response.json().catch(() => null);
-            if (response.status === 403) {
-                setKnownInactive(true);
-                onCompanyUnavailable?.(projectId);
-            }
+
             if (!response.ok) {
-                throw new Error(typeof data?.detail === "string" ? data.detail : "Unable to load company profile. Please try again later.");
+            throw new Error("Unable to load company profile.");
             }
+
             if (data?.company_profile?.status !== "ACTIVE") {
-                throw new Error("This company profile was inactive. Please try again later.");
+            setKnownInactive(true);
+            onCompanyUnavailable?.(projectId);
+            throw new Error("This company profile is unavailable.");
             }
-            navigate(`/projects/${projectId}/company-profile`, {
-                state: { from: location.pathname },
-            });
+
+            navigate(
+            `/projects/${projectId}/company-profile?user_id=${userId}`,
+            { state: { from: location.pathname } }
+            );
         } catch (err) {
             alert(err.message);
         } finally {
             setChecking(false);
         }
-    }
+        }
 
     if (cardView && !loading && !error && (knownInactive || company?.status !== "ACTIVE")) {
         return (

@@ -8,65 +8,53 @@ function Home({ isloggedin, currentUser }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-  useEffect(() => {
-    const controller = new AbortController()
-    async function loadProjects() {
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/projects`, {
-          signal: controller.signal,
-        })
+    useEffect(() => {
+      const controller = new AbortController();
 
-        if (!response.ok) {
-          throw new Error('${response.status}')
-        }
-        const data = await response.json()
-        const items = Array.isArray(data)? data : data.projects ?? [];
+      async function loadProjects() {
+        try {
+          const response = await fetch(
+            "http://127.0.0.1:8000/get_all_project",
+            { signal: controller.signal }
+          );
 
-        // Fetch cover image for each project
-        const projectsWithImages = await Promise.all(
-          items.map(async (project) => {
-            const projectId = project.project_id ?? project.id;
-            if (projectId == null) {return { ...project, image: null };}
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
 
-            try {
-              const imageResponse = await fetch(
-                `http://127.0.0.1:8000/projects/${projectId}/images`,{
-                signal: controller.signal,
-              });
+          const data = await response.json();
+          const items = Array.isArray(data) ? data : data.projects ?? [];
 
-              if (!imageResponse.ok) {
-                throw new Error(`HTTP ${imageResponse.status}`);
-              }
-              const imageData = await imageResponse.json();
-              console.log("Project ID:", projectId);
-              console.log("Images from Backend:", imageData.images);
-              const coverImage = (imageData.images ?? []).find((image) => image.is_cover === true);
-              console.log("Selected Cover Image:", coverImage);
-              return {...project,image: coverImage?.image_url ?? null};
+          const projectsWithImages = items.map((project) => ({
+            ...project,
+            id: project.project_id ?? project.id,
+            name: project.project_name ?? project.name,
+            style: project.category_code ?? project.style,
+            image: project.project_image
+              ? `data:image/${
+                  project.project_image.startsWith("iVBOR") ? "png" : "jpeg"
+                };base64,${project.project_image}`
+              : null,
+          }));
 
-            } catch (error) {
-              if (error.name === "AbortError") {throw error;}
-              console.error(`Failed to load cover for project ${projectId}:`,error);
-              return {...project,image: null};
-            }
-          })
-        );
-        if (!controller.signal.aborted) {
-          setProjects(projectsWithImages);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          setError(error.message);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
+          if (!controller.signal.aborted) {
+            setProjects(projectsWithImages);
+          }
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            setError(error.message);
+          }
+        } finally {
+          if (!controller.signal.aborted) {
+            setLoading(false);
+          }
         }
       }
-    }
-    loadProjects();
-    return () => controller.abort();
-  }, []);
+
+      loadProjects();
+
+      return () => controller.abort();
+    }, []);
 
   return (
     <main className="home-page">
