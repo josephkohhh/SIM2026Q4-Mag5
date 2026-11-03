@@ -61,7 +61,7 @@ function AdminPortal({ logout }) {
   }
   const filteredUsers = users.filter((user) => {
     const keyword = search.trim().toLowerCase();
-    const fullName = `${user.firstname ?? ""} ${user.lastname ?? ""}`
+    const fullName = `${user.name ?? ""} ${user.surname ?? ""}`
       .trim()
       .toLowerCase();
     const email = String(user.email ?? "").toLowerCase();
