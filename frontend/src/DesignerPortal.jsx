@@ -11,6 +11,7 @@
             const [dashboard, setDashboard] = useState(null);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState("");
+            const [searchIDP, setSearchIDP] = useState("");
             const [showNewIDP, setShowNewIDP] = useState(false);
             const [editingIDPId, setEditingIDPId] = useState(null);
             const [newIDP, setNewIDP] = useState({
@@ -203,7 +204,11 @@ return {
 
             const projects = Array.isArray(dashboard?.idps)
                 ? dashboard.idps : [];
-
+            const filteredProjects = projects.filter(project =>
+                String(project.title || "")
+                    .toLowerCase()
+                    .includes(searchIDP.trim().toLowerCase())
+            );
             const maxActivity = Math.max(
                 1,
                 ...activity.map(day =>
@@ -395,12 +400,13 @@ async function saveNewIDP(event) {
                 throw new Error("Original project not found.");
             }
 
-            // Existing backend uses project_name to locate the project
-            if (newIDP.title.trim() !== originalProject.project_name) {
-                throw new Error(
-                    "Renaming a project is not supported by the current update API."
-                );
-            }
+   
+// Use the old name to find the project in PostgreSQL.
+// The new project_name is already included in formData.
+            formData.append(
+                "original_project_name",
+                originalProject.project_name
+            );
         }
 
         const response = await fetch(url, {
@@ -566,7 +572,17 @@ async function saveNewIDP(event) {
 
                             {/* My IDPs table */}
                             <section className="DD_card DD_projects">
-                                <h2>My IDPs</h2>
+                                <div className="DD_projectsHeader">
+                                    <h2>My IDPs</h2>
+
+                                    <input
+                                        type="search"
+                                        className="DD_projectSearch"
+                                        placeholder="Search project name..."
+                                        value={searchIDP}
+                                        onChange={(e) => setSearchIDP(e.target.value)}
+                                    />
+                                </div>
 
                                 <div className="DD_tableScroll">
                                     <table>
@@ -581,8 +597,8 @@ async function saveNewIDP(event) {
                                         </thead>
 
                                         <tbody>
-                                            {projects.length > 0 ? (
-                                                projects.map(project => (
+                                                {filteredProjects.length > 0 ? (
+                                                    filteredProjects.map(project => (
                                                     <tr key={project.id}>
                                                         <td>{project.title}</td>
                                                         <td>{project.status}</td>
@@ -674,18 +690,6 @@ async function saveNewIDP(event) {
                                 <option value="Current">Current</option>
                                 <option value="Past">Past</option>
                             </select>
-                        </label>
-
-                        <label>
-                            Completion date
-                            <input
-                                type="date"
-                                value={newIDP.completion_date}
-                                onChange={(e) => setNewIDP({
-                                    ...newIDP,
-                                    completion_date: e.target.value
-                                })}
-                            />
                         </label>
 
                         <label>

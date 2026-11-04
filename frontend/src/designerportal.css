@@ -489,4 +489,42 @@
         grid-template-columns: 1fr;
     }
 }
+/* My IDPs Search Bar */
+.DD_projectsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 15px;
+}
 
+.DD_projectsHeader h2 {
+    margin: 0;
+}
+
+.DD_projectSearch {
+    width: 260px;
+    height: 36px;
+    padding: 8px 12px;
+    border: 1px solid #ded6ca;
+    border-radius: 8px;
+    background: white;
+    color: #12332f;
+    font-size: 13px;
+}
+
+.DD_projectSearch:focus {
+    outline: none;
+    border-color: #217562;
+}
+
+@media (max-width: 600px) {
+    .DD_projectsHeader {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .DD_projectSearch {
+        width: 100%;
+    }
+}

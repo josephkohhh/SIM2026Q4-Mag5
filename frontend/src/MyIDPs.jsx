@@ -338,16 +338,17 @@ async function loadIDPs() {
             {/* My IDPs Page */}
             <main className="MyIDPs_main">
 
-                <h1>My IDPs</h1>
-
-                <div className="MyIDPs_searchBar">
-                    <input
-                        type="text"
-                        placeholder="Search project name..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+            <h1>My IDPs</h1>
+            {/* Search Bar */}
+            <div className="MyIDPs_searchBar">
+                <input
+                    type="text"
+                    placeholder="Search project name..."
+                    aria-label="Search project name"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
 
                 <div className="MyIDPs_tableContainer">
 
