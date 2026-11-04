@@ -10,7 +10,6 @@ update_project_control = UpdateProjectControl()
 
 # Update category endpoint
 @router.patch("/update_project")
-@router.patch("/update_project")
 async def update_project(
     project_name: str | None = Form(default=None),
     original_project_name: str | None = Form(default=None),
