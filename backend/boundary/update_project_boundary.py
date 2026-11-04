@@ -10,8 +10,10 @@ update_project_control = UpdateProjectControl()
 
 # Update category endpoint
 @router.patch("/update_project")
+@router.patch("/update_project")
 async def update_project(
     project_name: str | None = Form(default=None),
+    original_project_name: str | None = Form(default=None),
     description: str | None = Form(default=None),
     category_code: str | None = Form(default=None),
     status: str | None = Form(default=None),
@@ -57,11 +59,29 @@ async def update_project(
             detail="No fields provided for update."
         )
 
-    try:
-        # Call th controller method
-        return update_project_control.update_project(project_name, updates)
-    except LookupError as error:
-        raise HTTPException(status_code=404, detail=str(error)) from error
-    except ValueError as error:
-        raise HTTPException(status_code=400, detail=str(error)) from error
+    # Use the original title to find the existing project
+    lookup_name = original_project_name or project_name
 
+    if not lookup_name or not lookup_name.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Project name is required."
+        )
+
+    try:
+        return update_project_control.update_project(
+            lookup_name,
+            updates
+        )
+
+    except LookupError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error)
+        ) from error
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        ) from error

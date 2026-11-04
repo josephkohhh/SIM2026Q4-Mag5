@@ -4,6 +4,7 @@ from database.database import Base, session
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.sql import func
+from sqlalchemy import cast, Date
 
 class ProjectView(Base):
     __tablename__ = "projectview"

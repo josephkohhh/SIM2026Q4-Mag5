@@ -73,9 +73,20 @@ export default function Reports({ logout }) {
       setReport(null);
 
       try {
-        // All counts come from FastAPI/PostgreSQL; no sample values are used.
-        const params = new URLSearchParams({ start_date: from, end_date: to });
-        const response = await fetch(`${API}/reports?${params}`, {
+      let url;
+
+        if (period === "daily") {
+          url = `${API}/reports/daily?report_date=${to}`;
+        } else if (period === "weekly") {
+          url = `${API}/reports/weekly?report_date=${to}`;
+        } else if (period === "monthly") {
+          const [year, month] = from.split("-");
+          url = `${API}/reports/monthly?year=${year}&month=${Number(month)}`;
+        } else {
+          throw new Error("Custom date ranges are not supported by the backend.");
+        }
+
+        const response = await fetch(url, {
           signal: controller.signal,
         });
         if (!response.ok) throw new Error(`Report request failed (${response.status})`);
@@ -93,7 +104,7 @@ export default function Reports({ logout }) {
 
     loadReport();
     return () => controller.abort();
-  }, [from, to]);
+  }, [from, to, period]);
 
   const activity = Array.isArray(report?.activity) ? report.activity : [];
   const categories = Array.isArray(report?.by_category) ? report.by_category : [];
@@ -125,7 +136,7 @@ export default function Reports({ logout }) {
       [],
       ["IDP", "Designer", "Views", "Shortlists"],
       ...mostViewed.map((item) => [
-        item.idp_title,
+        item.project_name,
         item.designer,
         item.views,
         item.shortlists,
@@ -299,13 +310,13 @@ export default function Reports({ logout }) {
                 <tr><th>IDP</th><th>Designer</th><th>Views</th><th>Shortlists</th></tr>
               </thead>
               <tbody>
-                {mostViewed.length > 0 ? mostViewed.map((item, index) => (
-                  <tr key={`${item.idp_title}-${index}`}>
-                    <td>{item.idp_title}</td>
-                    <td>{item.designer}</td>
-                    <td>{item.views}</td>
-                    <td>{item.shortlists}</td>
-                  </tr>
+              {mostViewed.length > 0 ? mostViewed.map((item, index) => (
+                <tr key={`${item.project_id}-${index}`}>
+                  <td>{item.project_name}</td>
+                  <td>{item.designer}</td>
+                  <td>{item.views}</td>
+                  <td>{item.shortlists}</td>
+                </tr>
                 )) : (
                   <tr><td colSpan="4">{loading ? "Loading..." : "No projects found"}</td></tr>
                 )}

@@ -22,3 +22,4 @@ class ReportControl:
     # Call the Entity method to generate a monthly report
     def generate_monthly_report(self, year: int, month: int):
         return self.report_entity.monthly_report(year, month)
+    

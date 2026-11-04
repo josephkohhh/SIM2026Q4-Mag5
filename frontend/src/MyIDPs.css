@@ -176,3 +176,30 @@
         font-size: 13px;
     }
 }
+/* Search bar */
+.MyIDPs_searchBar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 20px 0;
+}
+
+.MyIDPs_searchBar input {
+    width: 320px;
+    padding: 12px 16px;
+    border: 1px solid #ded8cf;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 14px;
+    color: #123333;
+    outline: none;
+}
+
+.MyIDPs_searchBar input:focus {
+    border-color: #237a69;
+}
+
+@media (max-width: 600px) {
+    .MyIDPs_searchBar input {
+        width: 100%;
+    }
+}

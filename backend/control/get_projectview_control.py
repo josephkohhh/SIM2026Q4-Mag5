@@ -11,5 +11,5 @@ class GetProjectViewControl:
 
     # Call the Entity method
     def get_projectview(self, project_id: int):
-        return self.projectview_entity.get_viewcount(project_id)
+        return self.projectview_entity.get_view_count(project_id)
 

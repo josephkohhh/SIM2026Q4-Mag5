@@ -12,7 +12,14 @@ function MyIDPs({ logout }) {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [search, setSearch] = useState("");
 
+    // Search projects by project name only
+    const filteredProjects = projects.filter(project =>
+        String(project.title || "")
+            .toLowerCase()
+            .includes(search.trim().toLowerCase())
+    );
     // Edit popup
     const [editingIDPId, setEditingIDPId] = useState(null);
     const [savingIDP, setSavingIDP] = useState(false);
@@ -29,37 +36,82 @@ function MyIDPs({ logout }) {
     const [idpImages, setIdpImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
 
-    // Load IDPs from FastAPI
-    async function loadIDPs() {
-        try {
-            setError("");
+// Load IDPs from FastAPI
+async function loadIDPs() {
+    setLoading(true);
 
-            const response = await fetch(`${API}/designer/dashboard`, {
-                credentials: "include"
-            });
+    try {
+        setError("");
 
-            if (!response.ok) {
-                throw new Error("Unable to load IDPs.");
-            }
+        const response = await fetch(`${API}/get_all_project`, {
+            credentials: "include"
+        });
 
-            const data = await response.json();
-
-            setProjects(
-                Array.isArray(data.idps) ? data.idps : []
-            );
-
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
+        if (!response.ok) {
+            throw new Error("Unable to load IDPs.");
         }
+
+        const allProjects = await response.json();
+        const userId = Number(localStorage.getItem("currentUserId"));
+
+        if (!userId) {
+            throw new Error("Designer user ID not found.");
+        }
+
+        // Get projects belonging to the logged-in designer
+        const myProjects = allProjects.filter(
+            project => Number(project.user_id) === userId
+        );
+
+        // Retrieve views and shortlists for every project
+        const projectsWithStats = await Promise.all(
+            myProjects.map(async project => {
+
+                const [viewResponse, shortlistResponse] = await Promise.all([
+                    fetch(`${API}/get_projectview/${project.project_id}`, {
+                        credentials: "include"
+                    }),
+                    fetch(`${API}/get_shortlistcount/${project.project_id}`, {
+                        credentials: "include"
+                    })
+                ]);
+
+                if (!viewResponse.ok || !shortlistResponse.ok) {
+                    throw new Error("Unable to load project statistics.");
+                }
+
+                const viewData = await viewResponse.json();
+                const shortlistData = await shortlistResponse.json();
+
+                return {
+                    id: project.project_id,
+                    title: project.project_name,
+                    category: project.category_code,
+                    description: project.description,
+                    status: project.status,
+                    views: Number(viewData.view_count ?? 0),
+                    shortlists: Number(shortlistData.shortlist_count ?? 0)
+                };
+            })
+        );
+
+        setProjects(
+            [...projectsWithStats].sort((a, b) => a.id - b.id)
+        );
+
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        setLoading(false);
     }
+}
 
     useEffect(() => {
         loadIDPs();
     }, []);
 
     // Delete IDP
+
     async function deleteIDP(project) {
 
         if (!window.confirm(`Delete "${project.title}"?`)) {
@@ -67,10 +119,13 @@ function MyIDPs({ logout }) {
         }
 
         try {
-            const response = await fetch(`${API}/idps/${project.id}`, {
-                method: "DELETE",
-                credentials: "include"
-            });
+            const response = await fetch(
+                `${API}/delete_project/${encodeURIComponent(project.title)}`,
+                {
+                    method: "DELETE",
+                    credentials: "include"
+                }
+            );
 
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
@@ -82,7 +137,6 @@ function MyIDPs({ logout }) {
                 );
             }
 
-            // Remove the deleted IDP from the table
             setProjects(previous =>
                 previous.filter(item => item.id !== project.id)
             );
@@ -90,49 +144,24 @@ function MyIDPs({ logout }) {
         } catch (err) {
             window.alert(err.message);
         }
-    }
+    }    
 
     // Open Edit popup
-    async function openEditIDP(project) {
+    function openEditIDP(project) {
 
-        try {
-            const response = await fetch(`${API}/idps/${project.id}`, {
-                credentials: "include"
-            });
+        setEditIDP({
+            title: project.title,
+            category: project.category || "",
+            status: project.status === "ONGOING" ? "Current" : "Past",
+            completion_date: "",
+            description: project.description || ""
+        });
 
-            if (!response.ok) {
-                const data = await response.json().catch(() => ({}));
-
-                throw new Error(
-                    typeof data.detail === "string"
-                        ? data.detail
-                        : "Unable to load IDP information."
-                );
-            }
-
-            const data = await response.json();
-
-            // Fill the form using existing PostgreSQL data
-            setEditIDP({
-                title: data.title || "",
-                category: data.category || "",
-                status: data.status || "Current",
-                completion_date: data.completion_date
-                    ? String(data.completion_date).slice(0, 10)
-                    : "",
-                description: data.description || ""
-            });
-
-            setIdpImages([]);
-            setImagePreviews([]);
-            setFormError("");
-            setEditingIDPId(project.id);
-
-        } catch (err) {
-            window.alert(err.message);
-        }
+        setIdpImages([]);
+        setImagePreviews([]);
+        setFormError("");
+        setEditingIDPId(project.id);
     }
-
     // Close Edit popup
     function closeEditIDP() {
         if (savingIDP) return;
@@ -172,6 +201,7 @@ function MyIDPs({ logout }) {
     }
 
     // Save edited IDP into PostgreSQL
+// Save edited IDP into PostgreSQL
     async function saveEditIDP(event) {
 
         event.preventDefault();
@@ -181,27 +211,62 @@ function MyIDPs({ logout }) {
         setSavingIDP(true);
         setFormError("");
 
-        const formData = new FormData();
-
-        formData.append("title", editIDP.title.trim());
-        formData.append("category", editIDP.category.trim());
-        formData.append("status", editIDP.status);
-        formData.append("completion_date", editIDP.completion_date);
-        formData.append("description", editIDP.description);
-
-        idpImages.forEach(file => {
-            formData.append("images", file);
-        });
-
         try {
-            const response = await fetch(
-                `${API}/idps/${editingIDPId}`,
-                {
-                    method: "PUT",
-                    body: formData,
-                    credentials: "include"
-                }
+            const originalProject = projects.find(
+                project => Number(project.id) === Number(editingIDPId)
             );
+
+            if (!originalProject) {
+                throw new Error("Original IDP not found.");
+            }
+
+            if (
+                !editIDP.title.trim() ||
+                !editIDP.category.trim() ||
+                !editIDP.description.trim()
+            ) {
+                throw new Error(
+                    "Project title, category and description are required."
+                );
+            }
+
+            const formData = new FormData();
+
+            // Original title identifies the project
+            formData.append(
+                "original_project_name",
+                originalProject.title
+            );
+
+            // New title and other updated values
+            formData.append(
+                "project_name",
+                editIDP.title.trim()
+            );
+
+            formData.append(
+                "category_code",
+                editIDP.category.trim()
+            );
+
+            formData.append(
+                "description",
+                editIDP.description.trim()
+            );
+
+            // Current -> ONGOING, Past -> COMPLETED
+            formData.append(
+                "status",
+                editIDP.status === "Current"
+                    ? "ONGOING"
+                    : "COMPLETED"
+            );
+
+            const response = await fetch(`${API}/update_project`, {
+                method: "PATCH",
+                body: formData,
+                credentials: "include"
+            });
 
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
@@ -213,11 +278,12 @@ function MyIDPs({ logout }) {
                 );
             }
 
+            // Close popup
             setEditingIDPId(null);
             setIdpImages([]);
             setImagePreviews([]);
 
-            // Reload updated IDPs from PostgreSQL
+            // Refresh table with latest PostgreSQL data
             await loadIDPs();
 
         } catch (err) {
@@ -274,6 +340,15 @@ function MyIDPs({ logout }) {
 
                 <h1>My IDPs</h1>
 
+                <div className="MyIDPs_searchBar">
+                    <input
+                        type="text"
+                        placeholder="Search project name..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+
                 <div className="MyIDPs_tableContainer">
 
                     <table className="MyIDPs_table">
@@ -297,15 +372,17 @@ function MyIDPs({ logout }) {
                                     </td>
                                 </tr>
 
-                            ) : projects.length === 0 ? (
+                            ) : filteredProjects.length === 0 ? (
                                 <tr>
                                     <td colSpan={5}>
-                                        No IDPs found.
+                                        {search.trim()
+                                            ? "No matching projects found."
+                                            : "No IDPs found."}
                                     </td>
                                 </tr>
 
                             ) : (
-                                projects.map(project => (
+                                filteredProjects.map(project => (
 
                                     <tr key={project.id}>
 
@@ -424,18 +501,6 @@ function MyIDPs({ logout }) {
                                 </label>
 
                                 <label>
-                                    Completion date
-                                    <input
-                                        type="date"
-                                        value={editIDP.completion_date}
-                                        onChange={e => setEditIDP({
-                                            ...editIDP,
-                                            completion_date: e.target.value
-                                        })}
-                                    />
-                                </label>
-
-                                <label>
                                     Description
                                     <textarea
                                         rows="4"
@@ -477,50 +542,6 @@ function MyIDPs({ logout }) {
                                 </div>
 
                             </div>
-
-                            {/* Project Images */}
-                            <div className="DD_formCard DD_imagesCard">
-
-                                <h3>Project images</h3>
-
-                                <div className="DD_imageGrid">
-
-                                    {[0, 1, 2, 3].map(index => (
-
-                                        <div
-                                            className="DD_imageBox"
-                                            key={index}
-                                        >
-
-                                            {imagePreviews[index] ? (
-                                                <img
-                                                    src={imagePreviews[index]}
-                                                    alt={`Project image ${index + 1}`}
-                                                />
-                                            ) : (
-                                                <span>Img</span>
-                                            )}
-
-                                        </div>
-
-                                    ))}
-
-                                </div>
-
-                                <label className="DD_uploadButton">
-                                    Upload replacement images
-
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        onChange={handleIDPImages}
-                                        hidden
-                                    />
-                                </label>
-
-                            </div>
-
                         </form>
 
                     </div>

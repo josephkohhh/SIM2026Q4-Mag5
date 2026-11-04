@@ -454,40 +454,6 @@
     resize: vertical;
 }
 
-.DD_imageGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-
-.DD_imageBox {
-    height: 110px;
-    background: #eae3d3;
-    border: 1px solid #ded6ca;
-    border-radius: 7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.DD_imageBox img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.DD_uploadButton {
-    display: block;
-    margin-top: 10px;
-    padding: 11px;
-    border: 1px solid #12332f;
-    border-radius: 8px;
-    text-align: center;
-    color: #12332f;
-    cursor: pointer;
-}
-
 .DD_formActions {
     display: flex;
     gap: 12px;

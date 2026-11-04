@@ -4,6 +4,8 @@ from database.database import Base, session
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.sql import func
+from sqlalchemy import cast, Date
+
 
 
 class Favorite(Base):
@@ -51,24 +53,46 @@ class Favorite(Base):
 # FavoriteEntity class responsible for database operations (CRUD)
 class FavoriteEntity:
 
-    # READ: Retrieve the no of times project added to customers' favorite list
+# READ: Retrieve total shortlists and daily shortlists
     def get_count(self, project_id: int):
 
-        with session() as db:
-            try:
-                count = (
-                    db.query(func.count(Favorite.favourite_id))
-                    .filter(Favorite.project_id == project_id)
-                    .scalar()
+     with session() as db:
+        try:
+            # Get total shortlists
+            count = (
+                db.query(func.count(Favorite.favourite_id))
+                .filter(Favorite.project_id == project_id)
+                .scalar()
+            )
+
+            # Group shortlists by date
+            shortlist_date = cast(Favorite.created_at, Date)
+
+            daily_shortlists = (
+                db.query(
+                    shortlist_date.label("date"),
+                    func.count(Favorite.favourite_id).label("shortlists")
                 )
+                .filter(Favorite.project_id == project_id)
+                .group_by(shortlist_date)
+                .order_by(shortlist_date)
+                .all()
+            )
 
-                return {
-                    "shortlist_count": count
-                }
+            return {
+                "shortlist_count": count,
+                "daily_shortlists": [
+                    {
+                        "date": row.date.isoformat(),
+                        "shortlists": row.shortlists
+                    }
+                    for row in daily_shortlists
+                ]
+            }
 
-            except SQLAlchemyError:
-                db.rollback()
-                raise
+        except SQLAlchemyError:
+            db.rollback()
+            raise
 
     # READ: Retrieve all saved projects belonging to a customer
     def get_all(self, user_id: int):
