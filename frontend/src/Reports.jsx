@@ -14,19 +14,62 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
+// Get the complete week (Monday to Sunday)
+function weekFor(selectedDate) {
+  const date = new Date(`${selectedDate}T12:00:00`);
+
+  const monday = new Date(date);
+  monday.setDate(
+    date.getDate() - ((date.getDay() + 6) % 7)
+  );
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  return {
+    from: formatDate(monday),
+    to: formatDate(sunday)
+  };
+}
+
+// Get the complete month
+function monthFor(selectedDate) {
+  const date = new Date(`${selectedDate}T12:00:00`);
+
+  const firstDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    1
+  );
+
+  const lastDay = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    0
+  );
+
+  return {
+    from: formatDate(firstDay),
+    to: formatDate(lastDay)
+  };
+}
+
+// Set date range depending on report type
 function datesFor(period) {
-  const today = new Date();
-  const start = new Date(today);
+  const today = formatDate(new Date());
 
   if (period === "weekly") {
-    // Current week, starting Monday.
-    start.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-  } else if (period === "monthly") {
-    // Current calendar month.
-    start.setDate(1);
+    return weekFor(today);
   }
 
-  return { from: formatDate(start), to: formatDate(today) };
+  if (period === "monthly") {
+    return monthFor(today);
+  }
+
+  return {
+    from: today,
+    to: today
+  };
 }
 
 function readableDate(date) {
@@ -192,10 +235,28 @@ export default function Reports({ logout }) {
               type="date"
               aria-label="From date"
               value={from}
-              max={to || undefined}
+              max={
+                period === "weekly" || period === "monthly"
+                  ? undefined
+                  : (to || undefined)
+              }
               onChange={(event) => {
-                setPeriod("custom");
-                setFrom(event.target.value);
+                const selectedDate = event.target.value;
+
+                if (period === "weekly" && selectedDate) {
+                  const range = weekFor(selectedDate);
+                  setFrom(range.from);
+                  setTo(range.to);
+
+                } else if (period === "monthly" && selectedDate) {
+                  const range = monthFor(selectedDate);
+                  setFrom(range.from);
+                  setTo(range.to);
+
+                } else {
+                  setPeriod("custom");
+                  setFrom(selectedDate);
+                }
               }}
             />
             <span className="reports-date-dash">–</span>
@@ -203,10 +264,28 @@ export default function Reports({ logout }) {
               type="date"
               aria-label="To date"
               value={to}
-              min={from || undefined}
+              min={
+                period === "weekly" || period === "monthly"
+                  ? undefined
+                  : (from || undefined)
+              }
               onChange={(event) => {
-                setPeriod("custom");
-                setTo(event.target.value);
+                const selectedDate = event.target.value;
+
+                if (period === "weekly" && selectedDate) {
+                  const range = weekFor(selectedDate);
+                  setFrom(range.from);
+                  setTo(range.to);
+
+                } else if (period === "monthly" && selectedDate) {
+                  const range = monthFor(selectedDate);
+                  setFrom(range.from);
+                  setTo(range.to);
+
+                } else {
+                  setPeriod("custom");
+                  setTo(selectedDate);
+                }
               }}
             />
           </div>
