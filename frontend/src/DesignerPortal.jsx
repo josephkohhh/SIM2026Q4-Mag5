@@ -727,23 +727,14 @@ async function saveNewIDP(event) {
                                                 readOnly
                                             />
                                         </label>
-
                                         <label>
                                             Description
                                             <textarea
                                                 rows="4"
-                                                placeholder="Description"
-                                                value={newIDP.description}
-                                                onChange={(e) => {
-                                                    setNewIDP({
-                                                        ...newIDP,
-                                                        description: e.target.value
-                                                    });
-                                                    setFormError("");
-                                                }}
-                                                required
+                                                value={viewingIDP.description || ""}
+                                                readOnly
                                             />
-                                        </label>    
+                                        </label>   
 
                                         <label>
                                             Total Views
