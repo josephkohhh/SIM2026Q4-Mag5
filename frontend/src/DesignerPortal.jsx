@@ -14,6 +14,7 @@
             const [searchIDP, setSearchIDP] = useState("");
             const [showNewIDP, setShowNewIDP] = useState(false);
             const [editingIDPId, setEditingIDPId] = useState(null);
+            const [viewingIDP, setViewingIDP] = useState(null);
             const [newIDP, setNewIDP] = useState({
             title: "",
             category: "",
@@ -22,8 +23,6 @@
             description: ""
         });
 
-        const [idpImages, setIdpImages] = useState([]);
-        const [imagePreviews, setImagePreviews] = useState([]);
         const [formError, setFormError] = useState("");
         const [savingIDP, setSavingIDP] = useState(false);
 
@@ -240,6 +239,41 @@ return {
                     window.alert(err.message);
                 }
             }
+            // View IDP details
+            async function openViewIDP(project) {
+                try {
+                    const userId = Number(localStorage.getItem("currentUserId"));
+
+                    if (!userId) {
+                        throw new Error("Designer user ID not found.");
+                    }
+
+                    const response = await fetch(
+                        `${API}/get_project/${encodeURIComponent(project.title)}/${userId}`,
+                        {
+                            credentials: "include"
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("Unable to load IDP details.");
+                    }
+
+                    const data = await response.json();
+
+                    setViewingIDP({
+                        title: data.project_name || project.title,
+                        category: data.category_code || "",
+                        status: data.status === "ONGOING" ? "Current" : "Past",
+                        description: data.description || "",
+                        views: project.views ?? 0,
+                        shortlists: project.shortlists ?? 0
+                    });
+
+                } catch (error) {
+                    window.alert(error.message);
+                }
+            }
             async function openEditIDP(project) {
                 try {
                     const userId = Number(localStorage.getItem("currentUserId"));
@@ -270,8 +304,6 @@ return {
                     });
 
                     setEditingIDPId(project.id);
-                    setIdpImages([]);
-                    setImagePreviews([]);
                     setFormError("");
                     setShowNewIDP(true);
 
@@ -293,22 +325,6 @@ return {
                         completion_date: "",
                         description: ""
                     });
-                }
-
-                async function handleIDPImages(event) {
-                    const files = Array.from(event.target.files || []).slice(0, 4);
-                    setIdpImages(files);
-
-                    const previews = await Promise.all(
-                        files.map(file => new Promise(resolve => {
-                            const reader = new FileReader();
-                            reader.onload = () => resolve(reader.result);
-                            reader.onerror = () => resolve("");
-                            reader.readAsDataURL(file);
-                        }))
-                    );
-
-                    setImagePreviews(previews);
                 }
 
 async function saveNewIDP(event) {
@@ -606,6 +622,31 @@ async function saveNewIDP(event) {
                                                         <td>{project.shortlists}</td>
 
                                                         <td className="DD_actions">
+
+                                                        <button
+                                                            type="button"
+                                                            className="IDP_viewButton"
+                                                            onClick={() => openViewIDP(project)}
+                                                            title="View project details"
+                                                            aria-label="View project details"
+                                                        >
+                                                            <svg
+                                                                width="18"
+                                                                height="18"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth="2"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                aria-hidden="true"
+                                                            >
+                                                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                                                                <circle cx="12" cy="12" r="3" />
+                                                            </svg>
+                                                        </button>
+
+                                                        <span> · </span>
                                                         <button
                                                             type="button"
                                                             onClick={() => openEditIDP(project)}
@@ -613,17 +654,17 @@ async function saveNewIDP(event) {
                                                             Edit
                                                         </button>
 
-                                                            <span> · </span>
+                                                        <span> · </span>
 
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => deleteIDP(project)}
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteIDP(project)}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
                                             ) : (
                                                 <tr>
                                                     <td colSpan={5}>
@@ -640,107 +681,192 @@ async function saveNewIDP(event) {
 
                         </div>
                     </div>
-                
-    {/* New IDP Popup */}
-    {showNewIDP && (
-        <div className="DD_modalOverlay">
-            <div className="DD_idpModal">
-
-                <form className="DD_idpForm" onSubmit={saveNewIDP}>
-
-                    {/* Project Details */}
-                    <div className="DD_formCard">
-                        <h3>Project details</h3>
-
-                        <label>
-                            Project title
-                            <input
-                                type="text"
-                                placeholder="Project title"
-                                value={newIDP.title}
-                                onChange={(e) => setNewIDP({
-                                    ...newIDP,
-                                    title: e.target.value
-                                })}
-                                required
-                            />
-                        </label>
-                        <label>
-                        Category
-                        <input
-                            type="text"
-                            placeholder="Enter project category"
-                            value={newIDP.category}
-                            onChange={(e) => setNewIDP({
-                                ...newIDP,
-                                category: e.target.value
-                            })}
-                            required
-                        />
-                        </label>
-                        <label>
-                            Status
-                            <select
-                                value={newIDP.status}
-                                onChange={(e) => setNewIDP({
-                                    ...newIDP,
-                                    status: e.target.value
-                                })}
+                    {/* View IDP Popup */}
+                    {viewingIDP && (
+                        <div className="DD_modalOverlay">
+                            <div
+                                className="DD_idpModal"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="View IDP"
                             >
-                                <option value="Current">Current</option>
-                                <option value="Past">Past</option>
-                            </select>
-                        </label>
+                                <form
+                                    className="DD_idpForm"
+                                    onSubmit={(e) => e.preventDefault()}
+                                >
+                                    <div className="DD_formCard">
 
-                        <label>
-                            Description
-                            <textarea
-                                rows="4"
-                                placeholder="Description"
-                                value={newIDP.description}
-                                onChange={(e) => setNewIDP({
-                                    ...newIDP,
-                                    description: e.target.value
-                                })}
-                            />
-                        </label>
+                                        <h3>Project details</h3>
 
-                        {formError && (
-                            <p className="DD_formError">{formError}</p>
-                        )}
+                                        <label>
+                                            Project title
+                                            <input
+                                                type="text"
+                                                value={viewingIDP.title}
+                                                readOnly
+                                            />
+                                        </label>
 
-                        <div className="DD_formActions">
-                            <button
-                                type="submit"
-                                className="DD_saveButton"
-                                disabled={savingIDP}
-                            >
-                            {savingIDP
-                                ? "Saving..."
-                                : editingIDPId === null
-                                    ? "Save IDP"
-                                    : "Save Changes"}
-                            </button>
+                                        <label>
+                                            Category
+                                            <input
+                                                type="text"
+                                                value={viewingIDP.category}
+                                                readOnly
+                                            />
+                                        </label>
 
-                            <button
-                                type="button"
-                                className="DD_cancelButton"
-                                onClick={closeNewIDP}
-                                disabled={savingIDP}
-                            >
-                                Cancel
-                            </button>
+                                        <label>
+                                            Status
+                                            <input
+                                                type="text"
+                                                value={viewingIDP.status}
+                                                readOnly
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Description
+                                            <textarea
+                                                rows="4"
+                                                value={viewingIDP.description}
+                                                readOnly
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Total Views
+                                            <input
+                                                type="text"
+                                                value={viewingIDP.views}
+                                                readOnly
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Times Shortlisted
+                                            <input
+                                                type="text"
+                                                value={viewingIDP.shortlists}
+                                                readOnly
+                                            />
+                                        </label>
+
+                                        <div className="DD_formActions">
+                                            <button
+                                                type="button"
+                                                className="DD_cancelButton"
+                                                onClick={() => setViewingIDP(null)}
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    )}            
+                    {/* New IDP Popup */}
+                    {showNewIDP && (
+                        <div className="DD_modalOverlay">
+                            <div className="DD_idpModal">
 
-            </div>
-        </div>
-    )}
+                                <form className="DD_idpForm" onSubmit={saveNewIDP}>
+
+                                    {/* Project Details */}
+                                    <div className="DD_formCard">
+                                        <h3>Project details</h3>
+
+                                        <label>
+                                            Project title
+                                            <input
+                                                type="text"
+                                                placeholder="Project title"
+                                                value={newIDP.title}
+                                                onChange={(e) => setNewIDP({
+                                                    ...newIDP,
+                                                    title: e.target.value
+                                                })}
+                                                required
+                                            />
+                                        </label>
+                                        <label>
+                                        Category
+                                        <input
+                                            type="text"
+                                            placeholder="Enter project category"
+                                            value={newIDP.category}
+                                            onChange={(e) => setNewIDP({
+                                                ...newIDP,
+                                                category: e.target.value
+                                            })}
+                                            required
+                                        />
+                                        </label>
+                                        <label>
+                                            Status
+                                            <select
+                                                value={newIDP.status}
+                                                onChange={(e) => setNewIDP({
+                                                    ...newIDP,
+                                                    status: e.target.value
+                                                })}
+                                            >
+                                                <option value="Current">Current</option>
+                                                <option value="Past">Past</option>
+                                            </select>
+                                        </label>
+
+                                        <label>
+                                            Description
+                                            <textarea
+                                                rows="4"
+                                                placeholder="Description"
+                                                value={newIDP.description}
+                                                onChange={(e) => setNewIDP({
+                                                    ...newIDP,
+                                                    description: e.target.value
+                                                })}
+                                            />
+                                        </label>
+
+                                        {formError && (
+                                            <p className="DD_formError">{formError}</p>
+                                        )}
+
+                                        <div className="DD_formActions">
+                                            <button
+                                                type="submit"
+                                                className="DD_saveButton"
+                                                disabled={savingIDP}
+                                            >
+                                            {savingIDP
+                                                ? "Saving..."
+                                                : editingIDPId === null
+                                                    ? "Save IDP"
+                                                    : "Save Changes"}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="DD_cancelButton"
+                                                onClick={closeNewIDP}
+                                                disabled={savingIDP}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    )}
 
 
                 </div>
             )
         }
 
-        export default DesignerPortal;
+    export default DesignerPortal;

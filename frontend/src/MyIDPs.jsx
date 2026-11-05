@@ -22,6 +22,7 @@ function MyIDPs({ logout }) {
     );
     // Edit popup
     const [editingIDPId, setEditingIDPId] = useState(null);
+    const [viewingIDP, setViewingIDP] = useState(null);
     const [savingIDP, setSavingIDP] = useState(false);
     const [formError, setFormError] = useState("");
 
@@ -32,9 +33,6 @@ function MyIDPs({ logout }) {
         completion_date: "",
         description: ""
     });
-
-    const [idpImages, setIdpImages] = useState([]);
-    const [imagePreviews, setImagePreviews] = useState([]);
 
 // Load IDPs from FastAPI
 async function loadIDPs() {
@@ -144,6 +142,15 @@ async function loadIDPs() {
         } catch (err) {
             window.alert(err.message);
         }
+    }
+    // Open View popup
+    function openViewIDP(project) {
+        setViewingIDP(project);
+    }
+
+    // Close View popup
+    function closeViewIDP() {
+        setViewingIDP(null);
     }    
 
     // Open Edit popup
@@ -157,8 +164,6 @@ async function loadIDPs() {
             description: project.description || ""
         });
 
-        setIdpImages([]);
-        setImagePreviews([]);
         setFormError("");
         setEditingIDPId(project.id);
     }
@@ -168,40 +173,9 @@ async function loadIDPs() {
 
         setEditingIDPId(null);
         setFormError("");
-        setIdpImages([]);
-        setImagePreviews([]);
-    }
-
-    // Upload images
-    async function handleIDPImages(event) {
-
-        const files = Array.from(event.target.files || []);
-
-        if (files.length > 4) {
-            setFormError("Maximum 4 images allowed.");
-            event.target.value = "";
-            return;
-        }
-
-        setFormError("");
-        setIdpImages(files);
-
-        const previews = await Promise.all(
-            files.map(file => new Promise(resolve => {
-                const reader = new FileReader();
-
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = () => resolve("");
-
-                reader.readAsDataURL(file);
-            }))
-        );
-
-        setImagePreviews(previews);
     }
 
     // Save edited IDP into PostgreSQL
-// Save edited IDP into PostgreSQL
     async function saveEditIDP(event) {
 
         event.preventDefault();
@@ -280,8 +254,6 @@ async function loadIDPs() {
 
             // Close popup
             setEditingIDPId(null);
-            setIdpImages([]);
-            setImagePreviews([]);
 
             // Refresh table with latest PostgreSQL data
             await loadIDPs();
@@ -397,6 +369,31 @@ async function loadIDPs() {
 
                                         <td className="MyIDPs_actions">
 
+                                        <button
+                                            type="button"
+                                            className="IDP_viewButton"
+                                            onClick={() => openViewIDP(project)}
+                                            title="View project details"
+                                            aria-label="View project details"
+                                        >
+                                            <svg
+                                                width="18"
+                                                height="18"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                                                <circle cx="12" cy="12" r="3" />
+                                            </svg>
+                                        </button>
+
+                                            <span> · </span>
+
                                             <button
                                                 type="button"
                                                 onClick={() => openEditIDP(project)}
@@ -433,6 +430,98 @@ async function loadIDPs() {
                 )}
 
             </main>
+            {/* View IDP Popup */}
+            {viewingIDP && (
+                <div className="DD_modalOverlay">
+                    <div
+                        className="DD_idpModal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="View IDP"
+                    >
+                        <form
+                            className="DD_idpForm"
+                            onSubmit={(e) => e.preventDefault()}
+                        >
+                            <div className="DD_formCard">
+
+                                <h3>Project details</h3>
+
+                                <label>
+                                    Project title
+                                    <input
+                                        type="text"
+                                        value={viewingIDP.title || ""}
+                                        readOnly
+                                    />
+                                </label>
+
+                                <label>
+                                    Category
+                                    <input
+                                        type="text"
+                                        value={viewingIDP.category || ""}
+                                        readOnly
+                                    />
+                                </label>
+
+                                <label>
+                                    Status
+                                    <input
+                                        type="text"
+                                        value={
+                                            viewingIDP.status === "ONGOING"
+                                                ? "Current"
+                                                : viewingIDP.status === "COMPLETED"
+                                                    ? "Past"
+                                                    : viewingIDP.status || ""
+                                        }
+                                        readOnly
+                                    />
+                                </label>
+
+                                <label>
+                                    Description
+                                    <textarea
+                                        rows="4"
+                                        value={viewingIDP.description || ""}
+                                        readOnly
+                                    />
+                                </label>
+
+                                <label>
+                                    Total Views
+                                    <input
+                                        type="text"
+                                        value={viewingIDP.views ?? 0}
+                                        readOnly
+                                    />
+                                </label>
+
+                                <label>
+                                    Times Shortlisted
+                                    <input
+                                        type="text"
+                                        value={viewingIDP.shortlists ?? 0}
+                                        readOnly
+                                    />
+                                </label>
+
+                                <div className="DD_formActions">
+                                    <button
+                                        type="button"
+                                        className="DD_cancelButton"
+                                        onClick={closeViewIDP}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Edit IDP Popup */}
             {editingIDPId !== null && (

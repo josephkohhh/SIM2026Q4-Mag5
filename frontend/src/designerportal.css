@@ -528,3 +528,20 @@
         width: 100%;
     }
 }
+.IDP_viewButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.IDP_viewButton svg {
+    width: 18px;
+    height: 18px;
+    color: #217562;
+}
+
+.IDP_viewButton:hover svg {
+    color: #145244;
+}
