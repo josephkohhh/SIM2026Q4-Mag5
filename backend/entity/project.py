@@ -2,6 +2,7 @@
 
 from database.database import Base, session
 import base64
+from sqlalchemy import text
 from sqlalchemy import (
     Column,
     Integer,
@@ -122,10 +123,17 @@ class ProjectEntity:
                     raise LookupError("Project not found.")
                 
                 # Record the project view
-                ProjectViewEntity().create_view(
-                project_id=project.project_id,
-                user_id=user_id
-            )
+                # Only record views made by customers
+                viewer_role = db.execute(
+                    text("SELECT role FROM useraccount WHERE user_id = :user_id"),
+                    {"user_id": user_id}
+                ).scalar()
+
+                if viewer_role and str(viewer_role).lower() == "customer":
+                    ProjectViewEntity().create_view(
+                        project_id=project.project_id,
+                        user_id=user_id
+                    )
                 return self._project_to_dict(project)
 
             except SQLAlchemyError:
