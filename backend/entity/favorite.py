@@ -4,7 +4,7 @@ from database.database import Base, session
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.sql import func
-from sqlalchemy import cast, Date
+from sqlalchemy import cast,Date,text
 
 
 
@@ -58,10 +58,23 @@ class FavoriteEntity:
 
      with session() as db:
         try:
+            
+            customer_only = text("""
+                    EXISTS (
+                        SELECT 1
+                        FROM useraccount AS u
+                        WHERE u.user_id = favorite.user_id
+                        AND LOWER(CAST(u.role AS TEXT)) = 'customer'
+                    )
+                """)
+
             # Get total shortlists
             count = (
                 db.query(func.count(Favorite.favourite_id))
-                .filter(Favorite.project_id == project_id)
+                .filter(
+                    Favorite.project_id == project_id,
+                    customer_only
+                )
                 .scalar()
             )
 
@@ -73,7 +86,10 @@ class FavoriteEntity:
                     shortlist_date.label("date"),
                     func.count(Favorite.favourite_id).label("shortlists")
                 )
-                .filter(Favorite.project_id == project_id)
+                .filter(
+                    Favorite.project_id == project_id,
+                    customer_only
+                )
                 .group_by(shortlist_date)
                 .order_by(shortlist_date)
                 .all()
@@ -123,6 +139,20 @@ class FavoriteEntity:
 
         with session() as db:
             try:
+                # Check whether the user is a customer
+                customer_role = db.execute(
+                    text("""
+                        SELECT role
+                        FROM useraccount
+                        WHERE user_id = :user_id
+                    """),
+                    {"user_id": user_id}
+                ).scalar()
+
+                if not customer_role or str(customer_role).lower() != "customer":
+                    raise ValueError(
+                        "Only customers can shortlist projects."
+                    )
 
                 # Check whether the project is already saved
                 existing = (
@@ -138,6 +168,7 @@ class FavoriteEntity:
                     raise ValueError(
                         "Project is already in your favorites."
                     )
+
                 # Create a new favorite record
                 favorite = Favorite(
                     user_id=user_id,
