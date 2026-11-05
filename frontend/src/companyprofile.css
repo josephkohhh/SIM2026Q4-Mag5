@@ -255,7 +255,7 @@
 }
 
 .CompanyProfile_save {
-    align-self: flex-start;
+    align-self: center;
     min-height: 40px;
     width: 190px;
     max-width: 100%;

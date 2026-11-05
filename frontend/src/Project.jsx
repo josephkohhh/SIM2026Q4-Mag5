@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import ProjectCompanyBox from "./Component/ProjectCompanyBox";
 import { useNavigate } from "react-router-dom";
 import './project.css'
+import defaultImage from './Image/ProjectDefaultImage.png';
 
 function Project({ currentUser }) {
   const navigate = useNavigate();
@@ -215,7 +216,7 @@ function Project({ currentUser }) {
               {paginatedProjects.map((project) => (
                 <div className="project-card" key={project.id}>
                   <div className="project-image">
-                    {project.image ? (<img src={project.image}/>) : (<div className="project-placeholder">Interior Design Cover Picture</div>)}
+                    {project.image ? (<img src={project.image}/>) : (<img src={defaultImage} alt={project.name || "Interior design project"} />)}
                     {project.style && (<span className="project-tag">{project.style}</span>)}
                   </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProjectCompanyBox from "./ProjectCompanyBox";
 import "./projectdetails.css";
+import defaultImage from '../Image/ProjectDetailDefaultImage.png';
 
 function ProjectDetails() {
   const { projectId } = useParams();
@@ -242,8 +243,7 @@ function ProjectDetails() {
       {!loading && !error && project && (
         <>
           <section className="project-slider-section">
-            {images.length === 0 ? (
-              <div className="project-no-image">No images available</div>) 
+            {images.length === 0 ? (<img src={defaultImage}   alt="No project photos yet" className="project-no-image"/>) 
               : (
               <>
                 <div className="project-slider">

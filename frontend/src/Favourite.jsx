@@ -2,6 +2,7 @@ import { useEffect,useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import './favourite.css';
+import defaultImage from './Image/ProjectDefaultImage.png';
 
 function Favourite({ currentUser }){
   const navigate = useNavigate();
@@ -239,7 +240,7 @@ function Favourite({ currentUser }){
               {paginatedProjects.map((project) => (
                 <div className="favourite-card" key={project.id}>
                   <div className="favourite-image">
-                    {project.image ? (<img src={project.image} alt={project.name || "Interior design project"}/>) : (<div className="favourite-placeholder">Interior Design Cover Picture</div>)}
+                    {project.image ? (<img src={project.image} alt={project.name || "Interior design project"}/>) : (<img src={defaultImage} alt={project.name || "Interior design project"} />)}
                     {project.style && (<span className="favourite-tag">{project.style}</span>)}
                   </div>
                   <div className="favourite-info">

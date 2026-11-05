@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
 import "./companyprofile.css";
+import defaultImage from './Image/ProjectDefaultImage.png';
+
 
 function CompanyProfile({ readOnly = false }) {
     const { projectId } = useParams();
@@ -15,6 +17,8 @@ function CompanyProfile({ readOnly = false }) {
     const [hasProfile, setHasProfile] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const fieldsReadOnly = readOnly || !isEditing;  
     const [error, setError] = useState("");
     const [showWelcome, setShowWelcome] = useState(false);
     const [user_id] = useState(() => Number(localStorage.getItem("currentUserId")));
@@ -155,7 +159,7 @@ function CompanyProfile({ readOnly = false }) {
     async function handleSubmit(event) {
         event.preventDefault();
 
-        if (readOnly || loading || saving || error) return;
+        if (fieldsReadOnly || loading || saving || error) return;
 
         if (!Number.isInteger(user_id) || user_id <= 0) {
             alert("Please log in again.");
@@ -203,6 +207,7 @@ function CompanyProfile({ readOnly = false }) {
 
             setHasProfile(true);
             setShowWelcome(false);
+            setIsEditing(false);
 
             alert(data?.message || "Company information saved successfully.");
         } catch (err) {
@@ -244,26 +249,26 @@ function CompanyProfile({ readOnly = false }) {
                                 <label htmlFor="company-name">Company name</label>
                                 <input id="company-name" name="company_name" type="text" maxLength={150}
                                     placeholder="Company name" value={company_name}
-                                    readOnly={readOnly} onChange={(e) => setCompany_name(e.target.value)} />
+                                    readOnly={fieldsReadOnly} onChange={(e) => setCompany_name(e.target.value)} />
 
                                 <label htmlFor="company-phone">Phone</label>
                                 <input id="company-phone" name="phone_no" type="tel" maxLength={30} placeholder="Phone"
-                                    value={phone_no} readOnly={readOnly} onChange={(e) => setPhone_no(e.target.value)} />
+                                    value={phone_no} readOnly={fieldsReadOnly} onChange={(e) => setPhone_no(e.target.value)} />
 
                                 <label htmlFor="company-address">Address</label>
                                 <input id="company-address" name="address" type="text" maxLength={255}
                                     placeholder="Address" value={address}
-                                    readOnly={readOnly} onChange={(e) => setAddress(e.target.value)} />
+                                    readOnly={fieldsReadOnly} onChange={(e) => setAddress(e.target.value)} />
 
                                 <label htmlFor="company-description">About the company</label>
                                 <textarea id="company-description" name="description" rows={4}
                                     placeholder="Tell me about the company" value={description}
-                                    readOnly={readOnly} onChange={(e) => setDescription(e.target.value)} />
+                                    readOnly={fieldsReadOnly} onChange={(e) => setDescription(e.target.value)} />
 
                                 {hasProfile && !readOnly && (
                                     <>
                                         <label htmlFor="company-status">Status</label>
-                                        <select id="company-status" name="status" value={status}
+                                        <select id="company-status" name="status" value={status} disabled={fieldsReadOnly}
                                             onChange={(e) => setStatus(e.target.value)}>
                                             <option value="ACTIVE">ACTIVE</option>
                                             <option value="INACTIVE">INACTIVE</option>
@@ -271,9 +276,22 @@ function CompanyProfile({ readOnly = false }) {
                                     </>
                                 )}
 
-                                {!readOnly && <button className="CompanyProfile_save" type="submit">
-                                    {saving ? "Saving..." : "Save"}
-                                </button>}
+                                {!readOnly && (
+                                    isEditing ? (
+                                        <button key="save" className="CompanyProfile_save" type="submit">
+                                            {saving ? "Saving..." : "Save"}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            key="update"
+                                            className="CompanyProfile_save"
+                                            type="button"
+                                            onClick={() => setIsEditing(true)}
+                                        >
+                                            Update
+                                        </button>
+                                    )
+                                )}
                             </fieldset>
                         </form>
                     </section>
@@ -290,7 +308,7 @@ function CompanyProfile({ readOnly = false }) {
                                         <article className="CompanyProfile_projectCard" key={project.id}>
                                             <Link to={`/projects/${project.id}`} className="CompanyProfile_projectImage">
                                                 {project.image ? <img src={project.image} alt={project.name || "Interior design project"} />
-                                                    : <span className="CompanyProfile_projectPlaceholder">Interior Design Cover Picture</span>}
+                                                    : <img src={defaultImage} alt={project.name || "Interior design project"} />}
                                             </Link>
                                             <div className="CompanyProfile_projectInfo">
                                                 <h3><Link to={`/projects/${project.id}`}>{project.name}</Link></h3>
