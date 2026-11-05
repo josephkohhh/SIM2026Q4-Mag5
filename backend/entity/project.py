@@ -8,7 +8,6 @@ from sqlalchemy import (
     String,
     Text,
     Enum as SQLEnum,
-    LargeBinary,
     ForeignKey,
     DateTime,
     func
@@ -53,7 +52,6 @@ class Project(Base):
     project_name = Column(String(150), nullable=False, unique=True)
     description = Column(Text, nullable=False)
     category_code = Column(String(100), nullable=False)
-    project_image = Column(LargeBinary, nullable=False)
     status = Column(
         SQLEnum(StatusEnum, name="project_status"),
         nullable=False,
