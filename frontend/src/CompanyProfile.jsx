@@ -128,6 +128,8 @@ function CompanyProfile({ readOnly = false }) {
                 }
                 if (controller.signal.aborted) return;
 
+                setIsEditing(!readOnly && data.company_profile === null);
+                
                 if (data.company_profile === null) {
                     setHasProfile(false);
                     if (!readOnly) setShowWelcome(true);
