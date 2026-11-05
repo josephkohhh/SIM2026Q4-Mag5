@@ -316,8 +316,6 @@ return {
                     setShowNewIDP(false);
                     setEditingIDPId(null);
                     setFormError("");
-                    setIdpImages([]);
-                    setImagePreviews([]);
                     setNewIDP({
                         title: "",
                         category: "",
@@ -488,8 +486,6 @@ async function saveNewIDP(event) {
                                         completion_date: "",
                                         description: ""
                                     });
-                                    setIdpImages([]);
-                                    setImagePreviews([]);
                                     setFormError("");
                                     setShowNewIDP(true);
                                 }}
