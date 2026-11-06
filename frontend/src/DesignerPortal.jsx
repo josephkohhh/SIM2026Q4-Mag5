@@ -327,8 +327,15 @@ return {
 
 async function saveNewIDP(event) {
     event.preventDefault();
-    setSavingIDP(true);
+
+    // Check Description before saving
+    if (!newIDP.description.trim()) {
+        setFormError("Please fill in the description");
+        return;
+    }
+
     setFormError("");
+    setSavingIDP(true);
 
     try {
         const userId = Number(localStorage.getItem("currentUserId"));
@@ -720,15 +727,14 @@ async function saveNewIDP(event) {
                                                 readOnly
                                             />
                                         </label>
-
                                         <label>
                                             Description
                                             <textarea
                                                 rows="4"
-                                                value={viewingIDP.description}
+                                                value={viewingIDP.description || ""}
                                                 readOnly
                                             />
-                                        </label>
+                                        </label>   
 
                                         <label>
                                             Total Views
