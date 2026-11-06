@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink } from "react-router-dom";
 import "./home.css";
 import mainImage from "./Image/main_image.jpg";
+import defaultImage from './Image/ProjectDefaultImage.png';
 
 function Home({ isloggedin, currentUser }) {
     const [projects, setProjects] = useState([])
@@ -95,7 +96,7 @@ function Home({ isloggedin, currentUser }) {
           {projects.slice(0,3).map((project) => (
             <article className="home-project-card" key={project.id}>
               <div className="home-project-image">
-                {project.image ? (<img src={project.image}/>) : (<div className="project-placeholder">Interior Design Cover Picture</div>)}
+                {project.image ? (<img src={project.image}/>) : (<img src={defaultImage} alt={project.name || "Interior design project"} />)}
                 {project.style && (<span className="project-tag">{project.style}</span>)}
               </div>
               <div className="home-project-info">
