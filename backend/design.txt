@@ -135,7 +135,6 @@ company profile
   "project_name": "Modern Office Interior Design",
   "description": "A modern office renovation project focused on creating a productive, comfortable, and aesthetically pleasing workspace.",
   "category_code": "Residential",
-  "project_image": "https://example.com/images/office-design.jpg",
   "status": "ONGOING"
 }
 

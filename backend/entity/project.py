@@ -1,7 +1,6 @@
 # project.py - Contains the Project model and database operations
 
 from database.database import Base, session
-import base64
 from sqlalchemy import (
     Column,
     Integer,
@@ -13,7 +12,6 @@ from sqlalchemy import (
     func
 )
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from datetime import datetime 
 from enum import Enum
 from entity.projectview import ProjectViewEntity
 
@@ -74,34 +72,12 @@ class Project(Base):
 # ProjectEntity class responsible for database operations (CRUD)
 class ProjectEntity:
 
-    # HELPER: Convert Project obj into JSON-serializable data
-    def _project_to_dict(self, project):
-        return {
-            "project_id": project.project_id,
-            "user_id": project.user_id,
-            "companyprofile_id": project.companyprofile_id,
-            "project_name": project.project_name,
-            "description": project.description,
-            "category_code": project.category_code,
-            "project_image": (
-                base64.b64encode(project.project_image).decode("utf-8")
-                if project.project_image
-                else None
-            ),
-            "status": project.status.value,
-            "created_at": project.created_at.isoformat(),
-            "updated_at": project.updated_at.isoformat(),
-        }
-
+    
     # READ: Retrieve all projects
     def get_all(self):
         with session() as db:
             try:
-                projects = db.query(Project).all()
-                return [
-                    self._project_to_dict(project)
-                    for project in projects
-                ]
+                return db.query(Project).all()
             except SQLAlchemyError:
                 db.rollback()
                 raise
@@ -124,7 +100,7 @@ class ProjectEntity:
                 project_id=project.project_id,
                 user_id=user_id
             )
-                return self._project_to_dict(project)
+                return project
 
             except SQLAlchemyError:
                 db.rollback()
@@ -138,10 +114,8 @@ class ProjectEntity:
         project_name = project_data.get("project_name")
         description = project_data.get("description")
         category_code = project_data.get("category_code")
-        project_image = project_data.get("project_image")
         status = project_data.get("status", StatusEnum.ONGOING)
 
-        # Create project
         with session() as db:
             try:
                 # Check for duplicate project
@@ -161,7 +135,6 @@ class ProjectEntity:
                     project_name=project_name.strip(),
                     description=description,
                     category_code=category_code,
-                    project_image=project_image,
                     status=status,
                 )
 
@@ -185,7 +158,7 @@ class ProjectEntity:
                 ) from e
 
             
-    # UPDATE: Update an existing project by project ID
+    # UPDATE: Update an existing project by project name
     def update(self, project_name: str, updates: dict):
 
         with session() as db:
@@ -199,59 +172,10 @@ class ProjectEntity:
                 if project is None:
                     raise LookupError("Project not found.")
 
-                # Only allow these fields to be updated
-                allowed_fields = {
-                    "project_name",
-                    "description",
-                    "category_code",
-                    "project_image",
-                    "status",
-                }
 
                 for field, value in updates.items():
 
-                    if field not in allowed_fields:
-                        raise ValueError(
-                            f"Field '{field}' cannot be updated."
-                        )
-
-                    # Validate project status
-                    if field == "status":
-                        if isinstance(value, str):
-                            try:
-                                value = StatusEnum(value.strip().upper())
-                            except ValueError:
-                                raise ValueError(
-                                    "Invalid project status."
-                                ) from None
-                        elif not isinstance(value, StatusEnum):
-                            raise ValueError(
-                                "Status must be a valid project status."
-                            )
-
-                    # Validate text fields
-                    if field in {
-                        "project_name",
-                        "description",
-                        "category_code",
-                    }:
-                        if not isinstance(value, str) or not value.strip():
-                            raise ValueError(
-                                f"{field} must be a non-empty string."
-                            )
-
-                        value = value.strip()
-
-                    # Image must be binary data
-                    if field == "project_image":
-                        if not isinstance(value, bytes) or not value:
-                            raise ValueError(
-                                "Project image must contain valid image bytes."
-                            )
-
                     setattr(project, field, value)
-
-                project.updated_at = datetime.now()
 
                 db.commit()
                 db.refresh(project)
@@ -301,7 +225,7 @@ class ProjectEntity:
             except IntegrityError as e:
                 db.rollback()
                 raise ValueError(
-                    "Cannot delete category because it is referenced "
+                    "Cannot delete project because it is referenced "
                     "by other records."
                 ) from e
 
