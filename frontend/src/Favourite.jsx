@@ -118,11 +118,7 @@ function Favourite({ currentUser }){
               name: project.project_name,
               style: project.category_code,
               company,
-              image: project.project_image
-                ? `data:image/${
-                    project.project_image.startsWith("iVBOR") ? "png" : "jpeg"
-                  };base64,${project.project_image}`
-                : null,
+              image: defaultImage,
             };
           })
         );
@@ -240,8 +236,17 @@ function Favourite({ currentUser }){
               {paginatedProjects.map((project) => (
                 <div className="favourite-card" key={project.id}>
                   <div className="favourite-image">
-                    {project.image ? (<img src={project.image} alt={project.name || "Interior design project"}/>) : (<img src={defaultImage} alt={project.name || "Interior design project"} />)}
-                    {project.style && (<span className="favourite-tag">{project.style}</span>)}
+                    <img
+                      src={project.image || defaultImage}
+                      alt={project.name || "Interior design project"}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = defaultImage;
+                      }}
+                    />
+                    {project.style && (
+                      <span className="favourite-tag">{project.style}</span>
+                    )}
                   </div>
                   <div className="favourite-info">
                     <h3>{project.name}</h3>

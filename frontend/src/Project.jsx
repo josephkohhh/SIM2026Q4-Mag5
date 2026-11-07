@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import './project.css'
 import defaultImage from './Image/ProjectDefaultImage.png';
 
+
 function Project({ currentUser }) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([])
@@ -104,13 +105,9 @@ function Project({ currentUser }) {
               name: project.project_name ?? project.name,
               style: project.category_code ?? project.style,
               company,
-              image: project.project_image
-                ? `data:image/${
-                    project.project_image.startsWith("iVBOR") ? "png" : "jpeg"
-                  };base64,${project.project_image}`
-                : null,
+              image: defaultImage,
             };
-          })
+            })
         );
         if (!controller.signal.aborted) {
           setProjects(projectsWithImages);
@@ -215,10 +212,19 @@ function Project({ currentUser }) {
             <div className="project-grid">
               {paginatedProjects.map((project) => (
                 <div className="project-card" key={project.id}>
-                  <div className="project-image">
-                    {project.image ? (<img src={project.image}/>) : (<img src={defaultImage} alt={project.name || "Interior design project"} />)}
-                    {project.style && (<span className="project-tag">{project.style}</span>)}
-                  </div>
+                <div className="project-image">
+                  <img
+                    src={project.image || defaultImage}
+                    alt={project.name || "Interior design project"}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = defaultImage;
+                    }}
+                  />
+                  {project.style && (
+                    <span className="project-tag">{project.style}</span>
+                  )}
+                </div>
 
                   <div className="project-info">
                     <h3>{project.name}</h3>

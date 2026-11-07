@@ -72,11 +72,23 @@ function ProjectDetails() {
           style: data.category_code,
         });
 
+        const placeholderImage =
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC";
+
+        const projectImage =
+          typeof data.project_image === "string"
+            ? data.project_image.trim()
+            : "";
+
         setImages(
-          data.project_image
+          projectImage && projectImage !== placeholderImage
             ? [{
                 image_id: data.project_id,
-                image_url: data.project_image,
+                image_url: projectImage.startsWith("data:image/")
+                  ? projectImage
+                  : `data:image/${
+                      projectImage.startsWith("iVBOR") ? "png" : "jpeg"
+                    };base64,${projectImage}`,
               }]
             : []
         );
@@ -247,7 +259,15 @@ function ProjectDetails() {
               : (
               <>
                 <div className="project-slider">
-                  <img src={images[currentImageIndex].image_url} alt={`${project.name} - ${currentImageIndex + 1}`} className="project-slider-image"/>
+                <img
+                  src={images[currentImageIndex].image_url}
+                  alt={`${project.name} - ${currentImageIndex + 1}`}
+                  className="project-slider-image"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = defaultImage;
+                  }}
+                  />
                   {images.length > 1 && (
                     <>
                       <button

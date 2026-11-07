@@ -309,8 +309,20 @@ function CompanyProfile({ readOnly = false }) {
                                     {paginatedProjects.map((project) => (
                                         <article className="CompanyProfile_projectCard" key={project.id}>
                                             <Link to={`/projects/${project.id}`} className="CompanyProfile_projectImage">
-                                                {project.image ? <img src={project.image} alt={project.name || "Interior design project"} />
-                                                    : <img src={defaultImage} alt={project.name || "Interior design project"} />}
+                                                <img
+                                                    src={
+                                                        !project.project_image ||
+                                                        project.project_image ===
+                                                            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC"
+                                                            ? defaultImage
+                                                            : project.image || defaultImage
+                                                    }
+                                                    alt={project.name || "Interior design project"}
+                                                    onError={(e) => {
+                                                        e.currentTarget.onerror = null;
+                                                        e.currentTarget.src = defaultImage;
+                                                    }}
+                                                />
                                             </Link>
                                             <div className="CompanyProfile_projectInfo">
                                                 <h3><Link to={`/projects/${project.id}`}>{project.name}</Link></h3>

@@ -236,7 +236,7 @@ body {
   transform: scale(1.05);
 }
 
-.home-project-tag {
+.project-tag {
   position: absolute;
   top: 16px;
   left: 16px;

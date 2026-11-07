@@ -31,13 +31,8 @@ function Home({ isloggedin, currentUser }) {
             id: project.project_id ?? project.id,
             name: project.project_name ?? project.name,
             style: project.category_code ?? project.style,
-            image: project.project_image
-              ? `data:image/${
-                  project.project_image.startsWith("iVBOR") ? "png" : "jpeg"
-                };base64,${project.project_image}`
-              : null,
+            image: defaultImage,
           }));
-
           if (!controller.signal.aborted) {
             setProjects(projectsWithImages);
           }
@@ -96,7 +91,14 @@ function Home({ isloggedin, currentUser }) {
           {projects.slice(0,3).map((project) => (
             <article className="home-project-card" key={project.id}>
               <div className="home-project-image">
-                {project.image ? (<img src={project.image}/>) : (<img src={defaultImage} alt={project.name || "Interior design project"} />)}
+              <img
+                  src={project.image || defaultImage}
+                  alt={project.name || "Interior design project"}
+                  onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = defaultImage;
+                  }}
+              />
                 {project.style && (<span className="project-tag">{project.style}</span>)}
               </div>
               <div className="home-project-info">

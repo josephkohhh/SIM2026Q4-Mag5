@@ -291,72 +291,51 @@ async function loadIDPs() {
                 );
             }
 
-            const formData = new FormData();
-
-            formData.append(
-                "project_name",
-                newIDP.title.trim()
-            );
-
-            formData.append(
-                "description",
-                newIDP.description.trim()
-            );
-
-            formData.append(
-                "category_code",
-                newIDP.category.trim()
-            );
-
-            formData.append(
-                "status",
-                newIDP.status === "Current"
+            const projectData = {
+                user_id: userId,
+                companyprofile_id: Number(companyProfile.companyprofile_id),
+                project_name: newIDP.title.trim(),
+                description: newIDP.description.trim(),
+                category_code: newIDP.category.trim(),
+                status: newIDP.status === "Current"
                     ? "ONGOING"
                     : "COMPLETED"
-            );
-
-            formData.append("user_id", String(userId));
-
-            formData.append(
-                "companyprofile_id",
-                String(companyProfile.companyprofile_id)
-            );
-
-            // Placeholder PNG because the backend requires an image
-            const pngBase64 =
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC";
-
-            const imageBytes = Uint8Array.from(
-                atob(pngBase64),
-                character => character.charCodeAt(0)
-            );
-
-            const imageFile = new File(
-                [imageBytes],
-                "placeholder.png",
-                { type: "image/png" }
-            );
-
-            formData.append("project_image", imageFile);
+            };
 
             const response = await fetch(
                 `${API}/create_project`,
                 {
                     method: "POST",
-                    body: formData,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(projectData),
                     credentials: "include"
                 }
             );
 
-            if (!response.ok) {
-                const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
 
-                throw new Error(
-                    typeof data.detail === "string"
-                        ? data.detail
-                        : "Failed to save IDP."
-                );
+            console.error("Create IDP error:", response.status, data);
+
+            let errorMessage = `Failed to save IDP (HTTP ${response.status})`;
+
+            if (typeof data.detail === "string") {
+                errorMessage = data.detail;
+            } else if (Array.isArray(data.detail)) {
+                errorMessage = data.detail
+                    .map(error => {
+                        const field = error.loc?.join(".") || "Unknown field";
+                        return `${field}: ${error.msg}`;
+                    })
+                    .join("\n");
+            } else if (data.message) {
+                errorMessage = data.message;
             }
+
+            throw new Error(errorMessage);
+        }
 
             closeNewIDP();
             window.location.reload();
@@ -397,43 +376,26 @@ async function loadIDPs() {
                 );
             }
 
-            const formData = new FormData();
-
-            // Original title identifies the project
-            formData.append(
-                "original_project_name",
-                originalProject.title
-            );
-
-            // New title and other updated values
-            formData.append(
-                "project_name",
-                editIDP.title.trim()
-            );
-
-            formData.append(
-                "category_code",
-                editIDP.category.trim()
-            );
-
-            formData.append(
-                "description",
-                editIDP.description.trim()
-            );
-
-            // Current -> ONGOING, Past -> COMPLETED
-            formData.append(
-                "status",
-                editIDP.status === "Current"
+            const updates = {
+                project_name: editIDP.title.trim(),
+                category_code: editIDP.category.trim(),
+                description: editIDP.description.trim(),
+                status: editIDP.status === "Current"
                     ? "ONGOING"
                     : "COMPLETED"
-            );
+            };
 
-            const response = await fetch(`${API}/update_project`, {
-                method: "PATCH",
-                body: formData,
-                credentials: "include"
-            });
+            const response = await fetch(
+                `${API}/update_project?project_name=${encodeURIComponent(originalProject.title)}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(updates),
+                    credentials: "include"
+                }
+            );
 
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
