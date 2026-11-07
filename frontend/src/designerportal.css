@@ -105,10 +105,10 @@
 .DesignerPortal_page .CompanyProfile_content {
     height: 100vh;
     min-height: 0;
-    padding: 20px 24px;
+    padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     overflow: hidden;
 }
 
@@ -180,7 +180,6 @@
 }
 
 .DD_stat {
-    min-height: 92px;
     padding: 14px;
     display: flex;
     flex-direction: column;
@@ -193,38 +192,23 @@
 }
 
 .DD_stat strong {
-    font-size: 24px;
     color: #12332f;
 }
 
-/* Chart and Top IDPs side by side */
-.DD_middle {
-    flex: 1;
-    min-height: 150px;
-    display: grid;
-    grid-template-columns: 1.65fr 1fr;
-    gap: 12px;
-}
 
 /* Chart card */
 .DD_chartCard {
     padding: 14px;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
 }
 
 .DD_chartCard h2,
-.DD_topCard h2,
-.DD_projects h2 {
+.DD_topCard h2 {
     margin: 0 0 10px;
     font-size: 15px;
 }
 
 /* Beige chart area */
 .DD_chart {
-    flex: 1;
-    min-height: 0;
     background: #eae3d3;
     border: 1px solid #ded6ca;
     border-radius: 6px;
@@ -282,108 +266,18 @@
     font-size: 10px;
 }
 
-/* Top IDPs card */
 .DD_topCard {
     padding: 14px;
-    overflow-y: auto;
 }
 
 .DD_topCard ol {
     margin: 8px 0;
     padding-left: 20px;
 }
-
-.DD_topCard li {
-    margin-bottom: 8px;
-    font-size: 12px;
-}
-
-/* My IDPs table card */
-.DD_projects {
-    flex: 0.8;
-    min-height: 130px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.DD_tableScroll {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-}
-
-.DD_tableScroll table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.DD_tableScroll th,
-.DD_tableScroll td {
-    padding: 9px 10px;
-    font-size: 12px;
-}
-
-.DD_tableScroll th {
-    color: #12332f;
-    font-weight: bold;
-}
-
-.DD_tableScroll td {
-    color: #61736d;
-}
-
-/* Edit and Delete actions */
-.DD_actions a {
-    color: #217562;
-    text-decoration: none;
-}
-
-.DD_actions button {
-    background: none;
-    border: none;
-    color: #c0392b;
-    cursor: pointer;
-    font: inherit;
-}
-
 /* Smaller screens */
 @media (max-width: 1000px) {
-    .DesignerPortal_page .CompanyProfile_content {
-        height: auto;
-        min-height: 100vh;
-        overflow: visible;
-    }
-
     .DD_stats {
         grid-template-columns: repeat(2, 1fr);
-    }
-
-    .DD_middle {
-        grid-template-columns: 1fr;
-        flex: none;
-    }
-
-    .DD_chartCard {
-        height: 230px;
-    }
-
-    .DD_topCard {
-        min-height: 150px;
-    }
-
-    .DD_projects {
-        flex: none;
-        min-height: 200px;
-    }
-}
-
-/* Short screens */
-@media (max-height: 650px) {
-    .DesignerPortal_page .CompanyProfile_content {
-        overflow-y: auto;
     }
 }
 
@@ -489,45 +383,6 @@
         grid-template-columns: 1fr;
     }
 }
-/* My IDPs Search Bar */
-.DD_projectsHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    gap: 15px;
-}
-
-.DD_projectsHeader h2 {
-    margin: 0;
-}
-
-.DD_projectSearch {
-    width: 260px;
-    height: 36px;
-    padding: 8px 12px;
-    border: 1px solid #ded6ca;
-    border-radius: 8px;
-    background: white;
-    color: #12332f;
-    font-size: 13px;
-}
-
-.DD_projectSearch:focus {
-    outline: none;
-    border-color: #217562;
-}
-
-@media (max-width: 600px) {
-    .DD_projectsHeader {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .DD_projectSearch {
-        width: 100%;
-    }
-}
 .IDP_viewButton {
     display: inline-flex;
     align-items: center;
@@ -544,4 +399,65 @@
 
 .IDP_viewButton:hover svg {
     color: #145244;
+}
+/* Statistics cards */
+.DesignerPortal_page .DD_stats .DD_stat {
+    min-height: 110px;
+}
+
+.DesignerPortal_page .DD_stats .DD_stat strong {
+    font-size: 30px;
+}
+
+/* Chart and Top IDPs fit remaining screen space */
+.DesignerPortal_page .DD_middle {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.65fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+}
+
+/* Chart card */
+.DesignerPortal_page .DD_chartCard {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Chart automatically adjusts to screen height */
+.DesignerPortal_page .DD_chart {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+/* Top IDPs card */
+.DesignerPortal_page .DD_topCard {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Smaller screens can scroll when needed */
+@media (max-width: 1000px), (max-height: 650px) {
+    .DesignerPortal_page .CompanyProfile_content {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .DesignerPortal_page .DD_middle {
+        grid-template-columns: 1fr;
+        flex: none;
+    }
+
+    .DesignerPortal_page .DD_chartCard {
+        height: 300px;
+    }
+
+    .DesignerPortal_page .DD_topCard {
+        min-height: 180px;
+    }
 }

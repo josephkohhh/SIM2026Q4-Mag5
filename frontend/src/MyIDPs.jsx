@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "./Image/logo.png";
 import "./designerportal.css";
 import "./MyIDPs.css";
@@ -9,6 +9,7 @@ const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 function MyIDPs({ logout }) {
 
+    const navigate = useNavigate();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -25,7 +26,14 @@ function MyIDPs({ logout }) {
     const [viewingIDP, setViewingIDP] = useState(null);
     const [savingIDP, setSavingIDP] = useState(false);
     const [formError, setFormError] = useState("");
-
+    const [showNewIDP, setShowNewIDP] = useState(false);
+    const [newIDP, setNewIDP] = useState({
+        title: "",
+        category: "",
+        status: "Current",
+        completion_date: "",
+        description: ""
+    });
     const [editIDP, setEditIDP] = useState({
         title: "",
         category: "",
@@ -152,7 +160,70 @@ async function loadIDPs() {
     function closeViewIDP() {
         setViewingIDP(null);
     }    
+    // Check Company Profile when New IDP is clicked
+    async function handleNewIDPClick() {
+        const userId = Number(localStorage.getItem("currentUserId"));
 
+        if (!userId) {
+            alert("Designer user ID not found.");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${API}/get_companyprofile/${userId}`,
+                {
+                    credentials: "include"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Unable to retrieve Company Profile.");
+            }
+
+            const data = await response.json();
+
+            // No Company Profile: Redirect to Company Profile page
+            if (!data.company_profile?.companyprofile_id) {
+                navigate("/designer_portal/company_profile");
+                return;
+            }
+
+            // Company Profile exists: Open New IDP popup
+            openNewIDP();
+
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+    // Open New IDP popup
+    function openNewIDP() {
+        setNewIDP({
+            title: "",
+            category: "",   
+            status: "Current",
+            completion_date: "",
+            description: ""
+    });
+
+    setFormError("");
+    setShowNewIDP(true);
+}
+
+    // Close New IDP popup
+    function closeNewIDP() {
+        setShowNewIDP(false);
+        setFormError("");
+
+        setNewIDP({
+            title: "",
+            category: "",
+            status: "Current",
+            completion_date: "",
+            description: ""
+        });
+    }
+    
     // Open Edit popup
     function openEditIDP(project) {
 
@@ -173,6 +244,128 @@ async function loadIDPs() {
 
         setEditingIDPId(null);
         setFormError("");
+    }
+    // Save New IDP into PostgreSQL
+    async function saveNewIDP(event) {
+        event.preventDefault();
+
+        // Check Description before saving
+        if (!newIDP.description.trim()) {
+            setFormError("Please fill in the description");
+            return;
+        }
+
+        setFormError("");
+        setSavingIDP(true);
+
+        try {
+            const userId = Number(
+                localStorage.getItem("currentUserId")
+            );
+
+            if (!userId) {
+                throw new Error("Designer user ID not found.");
+            }
+
+            // Retrieve the designer's Company Profile directly
+            const companyResponse = await fetch(
+                `${API}/get_companyprofile/${userId}`,
+                {
+                    credentials: "include"
+                }
+            );
+
+            if (!companyResponse.ok) {
+                throw new Error(
+                    "Unable to retrieve company profile."
+                );
+            }
+
+            const companyData = await companyResponse.json();
+
+            const companyProfile = companyData.company_profile;
+
+            if (!companyProfile?.companyprofile_id) {
+                throw new Error(
+                    "Please create your Company Profile before adding a new IDP."
+                );
+            }
+
+            const formData = new FormData();
+
+            formData.append(
+                "project_name",
+                newIDP.title.trim()
+            );
+
+            formData.append(
+                "description",
+                newIDP.description.trim()
+            );
+
+            formData.append(
+                "category_code",
+                newIDP.category.trim()
+            );
+
+            formData.append(
+                "status",
+                newIDP.status === "Current"
+                    ? "ONGOING"
+                    : "COMPLETED"
+            );
+
+            formData.append("user_id", String(userId));
+
+            formData.append(
+                "companyprofile_id",
+                String(companyProfile.companyprofile_id)
+            );
+
+            // Placeholder PNG because the backend requires an image
+            const pngBase64 =
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC";
+
+            const imageBytes = Uint8Array.from(
+                atob(pngBase64),
+                character => character.charCodeAt(0)
+            );
+
+            const imageFile = new File(
+                [imageBytes],
+                "placeholder.png",
+                { type: "image/png" }
+            );
+
+            formData.append("project_image", imageFile);
+
+            const response = await fetch(
+                `${API}/create_project`,
+                {
+                    method: "POST",
+                    body: formData,
+                    credentials: "include"
+                }
+            );
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+
+                throw new Error(
+                    typeof data.detail === "string"
+                        ? data.detail
+                        : "Failed to save IDP."
+                );
+            }
+
+            closeNewIDP();
+            window.location.reload();
+
+        } catch (err) {
+            setFormError(err.message);
+        } finally {
+            setSavingIDP(false);
+        }
     }
 
     // Save edited IDP into PostgreSQL
@@ -311,15 +504,27 @@ async function loadIDPs() {
             <main className="MyIDPs_main">
 
             <h1>My IDPs</h1>
-            {/* Search Bar */}
-            <div className="MyIDPs_searchBar">
-                <input
-                    type="text"
-                    placeholder="Search project name..."
-                    aria-label="Search project name"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+            {/* Search Bar and New IDP Button */}
+            <div className="MyIDPs_searchActions">
+
+                <div className="MyIDPs_searchBar">
+                    <input
+                        type="text"
+                        placeholder="Search project name..."
+                        aria-label="Search project name"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+
+                <button
+                    type="button"
+                    className="DD_newButton"
+                    onClick={handleNewIDPClick}
+                >
+                    + New IDP
+                </button>
+
             </div>
 
                 <div className="MyIDPs_tableContainer">
@@ -519,6 +724,116 @@ async function loadIDPs() {
 
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* New IDP Popup */}
+            {showNewIDP && (
+                <div className="DD_modalOverlay">
+                    <div className="DD_idpModal">
+
+                        <form
+                            className="DD_idpForm"
+                            onSubmit={saveNewIDP}
+                        >
+
+                            {/* Project Details */}
+                            <div className="DD_formCard">
+                                <h3>Project details</h3>
+
+                                <label>
+                                    Project title
+                                    <input
+                                        type="text"
+                                        placeholder="Project title"
+                                        value={newIDP.title}
+                                        onChange={(e) => setNewIDP({
+                                            ...newIDP,
+                                            title: e.target.value
+                                        })}
+                                        required
+                                    />
+                                </label>
+
+                                <label>
+                                    Category
+                                    <input
+                                        type="text"
+                                        placeholder="Enter project category"
+                                        value={newIDP.category}
+                                        onChange={(e) => setNewIDP({
+                                            ...newIDP,
+                                            category: e.target.value
+                                        })}
+                                        required
+                                    />
+                                </label>
+
+                                <label>
+                                    Status
+                                    <select
+                                        value={newIDP.status}
+                                        onChange={(e) => setNewIDP({
+                                            ...newIDP,
+                                            status: e.target.value
+                                        })}
+                                    >
+                                        <option value="Current">
+                                            Current
+                                        </option>
+
+                                        <option value="Past">
+                                            Past
+                                        </option>
+                                    </select>
+                                </label>
+
+                                <label>
+                                    Description
+                                    <textarea
+                                        rows="4"
+                                        placeholder="Description"
+                                        value={newIDP.description}
+                                        onChange={(e) => setNewIDP({
+                                            ...newIDP,
+                                            description: e.target.value
+                                        })}
+                                    />
+                                </label>
+
+                                {formError && (
+                                    <p className="DD_formError">
+                                        {formError}
+                                    </p>
+                                )}
+
+                                <div className="DD_formActions">
+
+                                    <button
+                                        type="submit"
+                                        className="DD_saveButton"
+                                        disabled={savingIDP}
+                                    >
+                                        {savingIDP
+                                            ? "Saving..."
+                                            : "Save IDP"}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="DD_cancelButton"
+                                        onClick={closeNewIDP}
+                                        disabled={savingIDP}
+                                    >
+                                        Cancel
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
                     </div>
                 </div>
             )}
