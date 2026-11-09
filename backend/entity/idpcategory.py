@@ -62,6 +62,7 @@ class IdpCategoryEntity:
 
     # READ: Retrieve a category by its code
     def get_by_category_code(self, category_code: str):
+        # to remove 
         if not isinstance(category_code, str) or not category_code.strip():
             raise ValueError("Category code must be a non-empty string.")
 
@@ -147,6 +148,7 @@ class IdpCategoryEntity:
 
                 # Apply the updates
                 for field, value in updates.items():
+                    # to remove 
                     if not isinstance(value, str) or not value.strip():
                         raise ValueError(
                             f"{field} must be a non-empty string."

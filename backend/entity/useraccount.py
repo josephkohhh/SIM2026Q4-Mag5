@@ -136,6 +136,7 @@ class UserAccountEntity:
         surname = user_data.get("surname")
         phone_no = user_data.get("phone_no")
 
+        # to Remove
         # Validate role
         if isinstance(role, str):
             try:
@@ -208,14 +209,10 @@ class UserAccountEntity:
                 if user is None:
                     raise LookupError("User account not found.")
 
+                # to update - 9/11
                 # Apply the updates
                 for field, value in updates.items():
                     if field == "password":
-                        if not isinstance(value, str) or not value:
-                            raise ValueError(
-                                "Password must be a non-empty string."
-                            )
-
                         user.password = hash_password(value)
                     else:
                         setattr(user, field, value)
