@@ -112,9 +112,52 @@ async function loadIDPs() {
     }
 }
 
-    useEffect(() => {
-        loadIDPs();
-    }, []);
+    const [idpCategories, setIDPCategories] = useState([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [categoryError, setCategoryError] = useState("");
+
+        useEffect(() => {
+            loadIDPs();
+        }, []);
+
+        useEffect(() => {
+            const controller = new AbortController();
+
+            async function loadCategories() {
+                try {
+                    setCategoryError("");
+
+                    const response = await fetch(`${API}/get_all_idpcategory`, {
+                        credentials: "include",
+                        signal: controller.signal
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Unable to load IDP categories.");
+                    }
+
+                    const data = await response.json();
+
+                    if (!Array.isArray(data)) {
+                        throw new Error("Unexpected category response format.");
+                    }
+
+                    setIDPCategories(data);
+                } catch (err) {
+                    if (err.name !== "AbortError") {
+                        setCategoryError(err.message);
+                    }
+                } finally {
+                    if (!controller.signal.aborted) {
+                        setCategoriesLoading(false);
+                    }
+                }
+            }
+
+            loadCategories();
+
+            return () => controller.abort();
+        }, []);
 
     // Delete IDP
 
@@ -719,17 +762,41 @@ async function loadIDPs() {
 
                                 <label>
                                     Category
-                                    <input
-                                        type="text"
-                                        placeholder="Enter project category"
+                                    <select
                                         value={newIDP.category}
                                         onChange={(e) => setNewIDP({
                                             ...newIDP,
                                             category: e.target.value
                                         })}
+                                        disabled={
+                                            categoriesLoading ||
+                                            !!categoryError ||
+                                            idpCategories.length === 0
+                                        }
                                         required
-                                    />
+                                    >
+                                        <option value="">
+                                            {categoriesLoading
+                                                ? "Loading categories..."
+                                                : "Select a category"}
+                                        </option>
+
+                                        {idpCategories.map(category => (
+                                            <option
+                                                key={category.category_id}
+                                                value={category.category_code}
+                                            >
+                                                {category.category_code}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </label>
+
+                                {categoryError && (
+                                    <p className="DD_formError">
+                                        {categoryError}
+                                    </p>
+                                )}                               
 
                                 <label>
                                     Status
