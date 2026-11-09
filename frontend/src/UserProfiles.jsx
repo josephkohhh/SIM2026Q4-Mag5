@@ -119,7 +119,7 @@ export default function UserProfiles({ logout }) {
         <img src={logo} alt="LOGO" />
 
         <nav className="AdminPortal_menu">
-          <Link to="/admin_portal">Users</Link>
+          <Link to="/admin_portal">Users Account</Link>
 
           <Link to="/admin_portal/user_profiles" className="active">
             User Profiles
