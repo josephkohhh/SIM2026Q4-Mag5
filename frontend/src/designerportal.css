@@ -1,0 +1,463 @@
+.DesignerPortal_page,
+.DesignerPortal_page * {
+    box-sizing: border-box;
+}
+
+.DesignerPortal_page {
+    display: flex;
+    min-height: 100vh;
+    background: #faf7f2;
+    color: #12332f;
+    color-scheme: light;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.CompanyProfile_sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 12px;
+    background: #12332f;
+    color: white;
+}
+
+.CompanyProfile_brand {
+    display: block;
+    width: 130px;
+    max-width: 100%;
+    height: 40px;
+    margin: 0 8px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.CompanyProfile_menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 32px;
+}
+
+.CompanyProfile_menu a {
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.CompanyProfile_menu a:hover,
+.CompanyProfile_menu a.active {
+    background: #214b45;
+}
+
+.CompanyProfile_menu a.active {
+    font-weight: 700;
+}
+
+.CompanyProfile_signout {
+    align-self: flex-start;
+    margin-top: auto;
+    padding: 24px 14px 4px;
+    border: none;
+    background: transparent;
+    color: white;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.CompanyProfile_signout:hover {
+    color: #ded6ca;
+}
+
+.CompanyProfile_content {
+    flex: 1;
+    min-width: 0;
+    padding: 24px;
+}
+
+.CompanyProfile_header {
+    margin-bottom: 40px;
+}
+
+.CompanyProfile_header h1 {
+    margin: 0;
+    color: #12332f;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: left;
+}
+
+/* DESIGNER DASHBOARD CONTENT ONLY */
+
+/* Main dashboard area */
+.DesignerPortal_page .CompanyProfile_page {
+    flex: 1;
+    min-width: 0;
+}
+
+.DesignerPortal_page .CompanyProfile_content {
+    height: 100vh;
+    min-height: 0;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+}
+
+/* Dashboard title */
+.DesignerPortal_page .CompanyProfile_header {
+    margin-bottom: 10px;
+}
+
+.DesignerPortal_page .CompanyProfile_header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+/* Performance overview and New IDP button */
+.DD_overview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.DD_overview span {
+    font-size: 13px;
+    color: #6d7773;
+}
+
+.DD_newButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 180px;
+    height: 38px;
+    background: #217562;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.DD_newButton:hover {
+    background: #249c82;
+}
+
+/* Error message */
+.DD_error {
+    margin: 0;
+    padding: 8px 12px;
+    background: #fff0f0;
+    color: #c0392b;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* All white dashboard cards */
+.DD_card {
+    background: white;
+    border: 1px solid #ded6ca;
+    border-radius: 8px;
+    min-width: 0;
+}
+
+/* Four statistics cards */
+.DD_stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.DD_stat {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.DD_stat span {
+    font-size: 12px;
+    color: #71807a;
+}
+
+.DD_stat strong {
+    color: #12332f;
+}
+
+
+/* Chart card */
+.DD_chartCard {
+    padding: 14px;
+}
+
+.DD_chartCard h2,
+.DD_topCard h2 {
+    margin: 0 0 10px;
+    font-size: 15px;
+}
+
+/* Beige chart area */
+.DD_chart {
+    background: #eae3d3;
+    border: 1px solid #ded6ca;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Chart bars */
+.DD_chartColumns {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.DD_day {
+    flex: 1;
+    min-width: 25px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.DD_bars {
+    width: 100%;
+    height: calc(100% - 20px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.DD_bar {
+    width: 12px;
+    border-radius: 3px 3px 0 0;
+}
+
+.DD_views {
+    background: #217562;
+}
+
+.DD_shortlists {
+    background: #d0a765;
+}
+
+.DD_day small {
+    font-size: 10px;
+}
+
+.DD_topCard {
+    padding: 14px;
+}
+
+.DD_topCard ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+/* Smaller screens */
+@media (max-width: 1000px) {
+    .DD_stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* New IDP Popup */
+.DD_modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.DD_idpModal {
+    width: 950px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #faf7f2;
+    padding: 24px;
+    border-radius: 10px;
+}
+
+.DD_idpForm {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.DD_formCard {
+    background: white;
+    border: 1px solid #ded6ca;
+    border-radius: 8px;
+    padding: 18px;
+    min-width: 0;
+}
+
+.DD_formCard h3 {
+    margin: 0 0 18px;
+    color: #12332f;
+    font-size: 16px;
+}
+
+.DD_formCard label:not(.DD_uploadButton) {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 14px;
+    font-size: 12px;
+}
+
+.DD_formCard input:not([type="file"]),
+.DD_formCard select,
+.DD_formCard textarea {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ded6ca;
+    border-radius: 7px;
+    background: white;
+    color: #12332f;
+    font: inherit;
+}
+
+.DD_formCard textarea {
+    resize: vertical;
+}
+
+.DD_formActions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.DD_saveButton,
+.DD_cancelButton {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.DD_saveButton {
+    background: #217562;
+    color: white;
+    border: none;
+}
+
+.DD_cancelButton {
+    background: white;
+    color: #12332f;
+    border: 1px solid #12332f;
+}
+
+.DD_formError {
+    color: #c0392b;
+}
+
+@media (max-width: 700px) {
+    .DD_idpForm {
+        grid-template-columns: 1fr;
+    }
+}
+.IDP_viewButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.IDP_viewButton svg {
+    width: 18px;
+    height: 18px;
+    color: #217562;
+}
+
+.IDP_viewButton:hover svg {
+    color: #145244;
+}
+/* Statistics cards */
+.DesignerPortal_page .DD_stats .DD_stat {
+    min-height: 110px;
+}
+
+.DesignerPortal_page .DD_stats .DD_stat strong {
+    font-size: 30px;
+}
+
+/* Chart and Top IDPs fit remaining screen space */
+.DesignerPortal_page .DD_middle {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.65fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+}
+
+/* Chart card */
+.DesignerPortal_page .DD_chartCard {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Chart automatically adjusts to screen height */
+.DesignerPortal_page .DD_chart {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+/* Top IDPs card */
+.DesignerPortal_page .DD_topCard {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Smaller screens can scroll when needed */
+@media (max-width: 1000px), (max-height: 650px) {
+    .DesignerPortal_page .CompanyProfile_content {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .DesignerPortal_page .DD_middle {
+        grid-template-columns: 1fr;
+        flex: none;
+    }
+
+    .DesignerPortal_page .DD_chartCard {
+        height: 300px;
+    }
+
+    .DesignerPortal_page .DD_topCard {
+        min-height: 180px;
+    }
+}

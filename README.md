@@ -14,13 +14,13 @@ Purpose of this project is to help customers search and evaluate interior design
 
 ## 🛠️ Technologies Used
 
-| Category               | Technology            |
-| ---------------------- | --------------------- |
-| **Frontend**           | HTML, CSS, JavaScript |
-| **Backend**            | Python (FastAPI)      |
-| **Database**           | PostgreSQL            |
-| **Repository**         | GitHub                |
-| **Project Management** | Agile (Taiga)         |
+| Category               | Technology       |
+| ---------------------- | ---------------- |
+| **Frontend**           | React            |
+| **Backend**            | Python (FastAPI) |
+| **Database**           | PostgreSQL       |
+| **Repository**         | GitHub           |
+| **Project Management** | Agile (Taiga)    |
 
 ## 📋 Requirements
 

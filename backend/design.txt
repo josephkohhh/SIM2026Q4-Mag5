@@ -1,0 +1,178 @@
+commands:
+source .venv/bin/activate (macos) 
+venv\Scripts\activate (windows)
+uvicorn main:app --reload
+which python
+pip list
+
+
+Boundary = represents the endpoint/routes 
+Control = represents the usecase biz logic (coordinates everything)
+Entity = represents the class stored in the database
+Schemas = defines what the client is allowed to send
+
+Database: postgresql://postgres:password@localhost:5432/SIM2026Q4Mag5
+
+FastAPI Architecture:
+backend/
+├── main.py
+├── boundary/
+├── control/
+├── entity/
+├── schemas/
+├── database/
+└── utils/
+
+
+
+Register module 
+
+POST /register
+        │
+        ▼
+register_boundary.py
+        │
+        ▼
+register_control.py
+        │
+        ├── check existing user
+        ├── hash password
+        └── create User
+                │
+                ▼
+            database
+
+
+Login Module
+
+                 POST /login
+                     │
+                     ▼
+              login_boundary.py
+                     │
+                     │ Receive and validate login request
+                     ▼
+               login_control.py
+                     │
+                     ├── Find user by email
+                     │
+                     ├── Check if user exists
+                     │
+                     ├── Verify password against stored hash
+                     │
+                     ├── Generate JWT access token
+                     │
+                     └── Retrieve user's role
+                              │
+                              ▼
+                           Database
+                       (Read user record)
+                              │
+                              ▼
+                       Return to Boundary
+                              │
+                              ├── Set JWT in HTTP-only cookie
+                              │
+                              └── Return login response
+                                      │
+                                      ▼
+                                  Frontend
+                              (Redirect based on role)
+```
+
+
+
+test data:
+
+register
+{
+  "email": "john123@example.com",
+  "password": "password",
+  "role": "INTERIOR DESIGNER",
+  "name": "john",
+  "surname": "lee",
+  "phone_no": "123456789"
+}
+
+login 
+{
+  admin01@example.com
+  "email": "alice123@example.com",
+  "password": "password"
+}
+
+update
+{
+  "password": "password",
+  "role": "CUSTOMER",
+  "name": "alice",
+  "surname": "",
+  "phone_no": "123456",
+  "status": "ACTIVE"
+}
+
+{
+  "role": "Admin",
+  "description": "Administrator access"
+}
+
+{
+  "category_code": "Commercial",
+  "description": "lorem ipsmum"
+}
+
+company profile
+{
+  "user_id": 1,
+  "company_name": "Tech Solutions Pte Ltd",
+  "description": "A software development company specialising in web applications.",
+  "phone_no": "91234567",
+  "address": "123 Orchard Road, Singapore"
+}
+
+
+{
+  "user_id": 4,
+  "companyprofile_id": 1,s
+  "project_name": "Modern Office Interior Design",
+  "description": "A modern office renovation project focused on creating a productive, comfortable, and aesthetically pleasing workspace.",
+  "category_code": "Residential",
+  "project_image": "https://example.com/images/office-design.jpg",
+  "status": "ONGOING"
+}
+
+favorite
+{
+    "user_id": 4,
+    "project_id": 1
+}
+
+report
+2026-10-28
+2026-10-28
+year=2026&month=10
+
+
+report format
+{
+  "period": {
+    "start_date": "2026-10-01",
+    "end_date": "2026-10-31"
+  },
+  "total_new_registrations": 10,
+  "registrations_by_role": {
+    "RoleEnum.CUSTOMER": 2,
+    "RoleEnum.INTERIOR_DESIGNER": 2,
+    "RoleEnum.ADMIN": 4,
+    "RoleEnum.PLATFORM_MANAGEMENT": 2
+  },
+  "active_accounts": 8,
+  "inactive_accounts": 2,
+  "previous_period_registrations": 0,
+  "registration_change": 10,
+  "registration_change_percentage": null
+}
+
+
+
+pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic pydantic-core python-dotenv python-multipart email-validator PyJWT pwdlib[argon2] dnspython

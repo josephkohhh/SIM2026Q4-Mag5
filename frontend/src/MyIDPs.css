@@ -1,0 +1,257 @@
+
+/* My IDPs Page */
+.MyIDPs_page,
+.MyIDPs_page * {
+    box-sizing: border-box;
+}
+
+.MyIDPs_page {
+    display: flex;
+    min-height: 100vh;
+    background: #faf7f2;
+    color: #12332f;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    text-align: left;
+}
+
+/* Main Content */
+.MyIDPs_main {
+    flex: 1;
+    min-width: 0;
+    padding: 30px;
+    background: #faf7f2;
+}
+
+/* Page Title */
+.MyIDPs_main h1 {
+    margin: 0 0 28px;
+    font-size: 30px;
+    font-weight: 700;
+    color: #12332f;
+}
+
+/* Table Container */
+.MyIDPs_tableContainer {
+    width: 100%;
+    min-height: 75vh;
+    padding: 24px;
+    background: white;
+    border: 1px solid #ded6ca;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+/* Table Layout */
+.MyIDPs_table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    text-align: left;
+}
+
+/* Table Headers */
+.MyIDPs_table th {
+    padding: 20px 18px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #12332f;
+    border-bottom: 2px solid #e9e2d7;
+    background: white;
+}
+
+/* Table Rows */
+.MyIDPs_table td {
+    padding: 26px 18px;
+    font-size: 15px;
+    color: #607670;
+    border-bottom: 1px solid #eee9e1;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+/* Row Hover */
+.MyIDPs_table tbody tr:hover {
+    background: #faf7f2;
+}
+
+/* Remove last row border */
+.MyIDPs_table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Column Widths */
+.MyIDPs_table th:nth-child(1) {
+    width: 35%;
+}
+
+.MyIDPs_table th:nth-child(2) {
+    width: 15%;
+}
+
+.MyIDPs_table th:nth-child(3) {
+    width: 13%;
+}
+
+.MyIDPs_table th:nth-child(4) {
+    width: 17%;
+}
+
+.MyIDPs_table th:nth-child(5) {
+    width: 20%;
+}
+
+/* Edit and Delete Buttons */
+.MyIDPs_actions {
+    white-space: nowrap;
+}
+
+.MyIDPs_actions button {
+    background: transparent;
+    border: none;
+    padding: 5px 6px;
+    font-family: inherit;
+    font-size: 15px;
+    color: #217562;
+    cursor: pointer;
+}
+
+/* Delete Button */
+.MyIDPs_actions .MyIDPs_delete {
+    color: #d43b30;
+}
+
+/* Button Hover */
+.MyIDPs_actions button:hover {
+    text-decoration: underline;
+}
+
+/* Error Message */
+.MyIDPs_error {
+    margin-top: 15px;
+    padding: 10px;
+    color: #c0392b;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1000px) {
+    .MyIDPs_main {
+        padding: 20px;
+    }
+
+    .MyIDPs_tableContainer {
+        padding: 15px;
+    }
+
+    .MyIDPs_table th,
+    .MyIDPs_table td {
+        padding: 18px 12px;
+    }
+}
+
+@media (max-width: 700px) {
+    .MyIDPs_main {
+        padding: 15px;
+    }
+
+    .MyIDPs_main h1 {
+        font-size: 24px;
+    }
+
+    .MyIDPs_tableContainer {
+        padding: 12px;
+        min-height: 65vh;
+    }
+
+    .MyIDPs_table {
+        min-width: 700px;
+    }
+
+    .MyIDPs_table th {
+        font-size: 14px;
+    }
+
+    .MyIDPs_table td {
+        font-size: 13px;
+    }
+}
+
+.IDP_viewButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.IDP_viewButton svg {
+    width: 18px;
+    height: 18px;
+    color: #217562;
+}
+
+.IDP_viewButton:hover svg {
+    color: #145244;
+}
+/* Search bar and New IDP button */
+.MyIDPs_searchActions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* Search bar container */
+.MyIDPs_searchActions .MyIDPs_searchBar {
+    flex: 0 1 350px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Search input */
+.MyIDPs_searchActions .MyIDPs_searchBar input {
+    width: 100%;
+    height: 45px;
+    padding: 10px 15px;
+    background: white;
+    color: #12332f;
+    border: 1px solid #d9d1c5;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    outline: none;
+}
+
+.MyIDPs_searchActions .MyIDPs_searchBar input:focus {
+    border-color: #217562;
+    box-shadow: 0 0 0 2px rgba(33, 117, 98, 0.12);
+}
+
+/* New IDP button */
+.MyIDPs_searchActions .DD_newButton {
+    width: 180px;
+    height: 45px;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Smaller screens */
+@media (max-width: 600px) {
+    .MyIDPs_searchActions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .MyIDPs_searchActions .MyIDPs_searchBar {
+        flex: none;
+        width: 100%;
+    }
+
+    .MyIDPs_searchActions .DD_newButton {
+        width: 100%;
+    }
+}
